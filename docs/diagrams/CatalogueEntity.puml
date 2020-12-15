@@ -3,63 +3,78 @@ class Catalogue  {
     <extends HttpEntity>
   -- public variables --
   Enum IUDXEntityEnum
-  optional string url (default to staticurl)
-  optional string token (required for onboarders)
+  optional str url (default to staticurl)
+  optional str token (required for onboarders)
   optional list headers
   -- public methods --
-  boolean status() // check status
+  Catalogue init(optional str cat_url, optional str token, option dict headers)
+  bool status() // check status
   CatalogueResult search(CatalogueQuery query) // search
   CatalogueResult count(CatalogueQuery query) // count
-  CatalogueResult list(IUDXEntityEnum) // list
-  CatalogueResult getRelatedEntity(string id, IUDXEntityEnum rel)
-  CatalogueResult getItem(string id) // get item given id
-  dict create(dict item) // any item
-  dict update(dict item) // any item
-  dict getDataModel(string id) // given the id
-  boolean delete(string id)
-  boolean validate(dict doc)
+  CatalogueResult list(IUDXEntityEnum entity_type) // list
+  CatalogueResult rel_search(CatalogueQuery query) // relsearch
+  CatalogueResult get_related_entity(str iid, IUDXEntityEnum rel)
+  CatalogueResult get_item(str id) // get item given id
+  CatalogueResult create(dict item) // any item
+  CatalogueResult update(dict item) // any item
+  CatalogueResult get_data_model(str id) // given the id
+  CatalogueResult delete(str id)
+  boolean validate(dict item)
+  void update_token(str token)
 }
 
 class HTTPEntity  {
-  <implements Requests>
+  <extends Requests>
+  -- public variables --
+  dict cert // (str cert, str key)
   -- public methods --
-  HTTPResponse get(string url, dict pathParams, dict headers)
-  HTTPResponse delete(string url, dict pathParams, dict headers)
-  HTTPResponse post(string url, dict body, dict headers)
-  HTTPResponse update(string url, dict body, dict headers)
+  HTTPResponse get(str url, dict path_params, dict headers)
+  HTTPResponse delete(str url, dict path_params, dict headers)
+  HTTPResponse post(str url, dict body, dict headers)
+  HTTPResponse update(str url, dict body, dict headers)
+}
+
+class HTTPResponse {
+  <extends requests.Response>
+  -- private variables --
+  Response _response
+  -- public methods --
+  dict json()
+  int status_code()
+
 }
 
 
 class CatalogueQuery {
     -- private variables--
-    string geoproperty, geometry, georel
-    list coordinates
-    string textQuery
-    list<string> key
-    list<list<string>> value
-    list<string> filters
+    str _geoproperty, _geometry, _georel
+    list _coordinates
+    str _text_query
+    list<str> _key
+    list<list<str>> _value
+    list<str> _filters
     -- public methods --
-    CatalogueQuery geo(string geoproperty,
-                        \t string geometry, list coordinates, string georel)
-    CatalogueQuery property(string key,
-                        \t <list<string>> value)
-    CatalogueQuery text(string textQuery)
-    CatalogueQuery addFilter(list<string> filters)
+    CatalogueQuery geo(str geoproperty,
+        \t str geometry, str, georel, list coordinates)
+    CatalogueQuery property(str key,
+                        \t <list<str>> value)
+    CatalogueQuery text(str text_query)
+    CatalogueQuery add_filter(list<str> filters)
 }
 
 
 class CatalogueResult {
     -- static variables --
-    int pageSize
+    int _page_size
     -- public variables --
     list<dict> documents
-    int totalHits
-    int totalPages
-    int currentPage
+    int total_hits
+    int total_pages
+    int current_page
     -- public --
-    CatalogueResult nextPage() //append to documents
-    CatalogueResult gotoPage(int pagenum)
-    CatalogueResult allPages()
+    CatalogueResult next_page() //append to documents
+    CatalogueResult goto_page(int pagenum)
+    CatalogueResult all_pages()
 
 }
 
