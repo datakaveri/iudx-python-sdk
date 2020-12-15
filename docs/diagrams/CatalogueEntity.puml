@@ -1,0 +1,68 @@
+@startuml
+class Catalogue  {
+    <extends HttpEntity>
+  -- public variables --
+  Enum IUDXEntityEnum
+  optional string url (default to staticurl)
+  optional string token (required for onboarders)
+  optional list headers
+  -- public methods --
+  boolean status() // check status
+  CatalogueResult search(CatalogueQuery query) // search
+  CatalogueResult count(CatalogueQuery query) // count
+  CatalogueResult list(IUDXEntityEnum) // list
+  CatalogueResult getRelatedEntity(string id, IUDXEntityEnum rel)
+  CatalogueResult getItem(string id) // get item given id
+  dict create(dict item) // any item
+  dict update(dict item) // any item
+  dict getDataModel(string id) // given the id
+  boolean delete(string id)
+  boolean validate(dict doc)
+}
+
+class HTTPEntity  {
+  <implements Requests>
+  -- public methods --
+  HTTPResponse get(string url, dict pathParams, dict headers)
+  HTTPResponse delete(string url, dict pathParams, dict headers)
+  HTTPResponse post(string url, dict body, dict headers)
+  HTTPResponse update(string url, dict body, dict headers)
+}
+
+
+class CatalogueQuery {
+    -- private variables--
+    string geoproperty, geometry, georel
+    list coordinates
+    string textQuery
+    list<string> key
+    list<list<string>> value
+    list<string> filters
+    -- public methods --
+    CatalogueQuery geo(string geoproperty,
+                        \t string geometry, list coordinates, string georel)
+    CatalogueQuery property(string key,
+                        \t <list<string>> value)
+    CatalogueQuery text(string textQuery)
+    CatalogueQuery addFilter(list<string> filters)
+}
+
+
+class CatalogueResult {
+    -- static variables --
+    int pageSize
+    -- public variables --
+    list<dict> documents
+    int totalHits
+    int totalPages
+    int currentPage
+    -- public --
+    CatalogueResult nextPage() //append to documents
+    CatalogueResult gotoPage(int pagenum)
+    CatalogueResult allPages()
+
+}
+
+
+
+@enduml
