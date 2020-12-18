@@ -7,6 +7,7 @@ from typing import TypeVar, Generic, Any, List, Dict
 
 CatalogueQuery = TypeVar('T')
 
+
 class CatalogueQuery():
     """Class documentation. Be a little descriptive here.
 

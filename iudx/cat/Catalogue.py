@@ -11,6 +11,7 @@ Catalogue = TypeVar("T")
 CatalogueResult = TypeVar("T")
 CatalogueQuery = TypeVar("T")
 
+
 class Catalogue():
     """Class documentation. Be a little descriptive here.
 
@@ -64,17 +65,7 @@ class Catalogue():
         """
         return self
 
-    def count(self, query: CatalogueQuery) -> CatalogueResult:
-        """Pydoc heading.
-
-        Args:
-            argument (argument-type): argument-description
-        Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
-        """
-        return self
-
-    def list(self, entity_type: str) -> CatalogueResult:
+    def list_entity(self, entity_type: str) -> CatalogueResult:
         """Pydoc heading.
 
         Args:
@@ -163,4 +154,3 @@ class Catalogue():
             returned-varaible (returned-varaible-type): return-variable-description
         """
         return None
-

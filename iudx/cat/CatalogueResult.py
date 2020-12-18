@@ -6,6 +6,7 @@ from typing import TypeVar, Generic, Any, List, Dict
 
 CatalogueResult = TypeVar('T')
 
+
 class CatalogueResult():
     """Class documentation. Be a little descriptive here.
 
@@ -15,7 +16,7 @@ class CatalogueResult():
         returned-varaible (returned-varaible-type): return-variable-description
     """
 
-    def __init__(self:CatalogueResult):
+    def __init__(self: CatalogueResult):
         """Pydoc heading.
 
         Args:
