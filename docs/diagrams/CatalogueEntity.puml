@@ -9,9 +9,9 @@ class Catalogue  {
   -- public methods --
   Catalogue init(optional str cat_url, optional str token, option dict headers)
   bool status() // check status
-  CatalogueResult search(CatalogueQuery query) // search
-  CatalogueResult count(CatalogueQuery query) // count
-  CatalogueResult list(IUDXEntityEnum entity_type) // list
+  CatalogueResult search_entity(CatalogueQuery query) // search
+  CatalogueResult count_entity(CatalogueQuery query) // count
+  CatalogueResult list_entity(IUDXEntityEnum entity_type) // list
   CatalogueResult rel_search(CatalogueQuery query) // relsearch
   CatalogueResult get_related_entity(str iid, IUDXEntityEnum rel)
   CatalogueResult get_item(str id) // get item given id
@@ -54,12 +54,12 @@ class CatalogueQuery {
     list<list<str>> _value
     list<str> _filters
     -- public methods --
-    CatalogueQuery geo(str geoproperty,
+    CatalogueQuery geo_search(str geoproperty,
         \t str geometry, str, georel, list coordinates)
-    CatalogueQuery property(str key,
+    CatalogueQuery property_search(str key,
                         \t <list<str>> value)
-    CatalogueQuery text(str text_query)
-    CatalogueQuery add_filter(list<str> filters)
+    CatalogueQuery text_search(str text_query)
+    CatalogueQuery add_filters(list<str> filters)
 }
 
 

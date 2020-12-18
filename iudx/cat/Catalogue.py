@@ -20,9 +20,9 @@ class Catalogue():
     Returns:
         returned-varaible (returned-varaible-type): return-variable-description
     """
-    
+
     def __init__(self, cat_url: str=None, token: str=None,
-                    headers: Dict[str, str]=None):
+                 headers: Dict[str, str]=None):
         """Pydoc heading.
 
         Args:
@@ -45,7 +45,7 @@ class Catalogue():
         """
         return self
 
-    def search(self, query: CatalogueQuery) -> CatalogueResult:
+    def search_entity(self, query: CatalogueQuery) -> CatalogueResult:
         """Pydoc heading.
 
         Args:
@@ -55,7 +55,7 @@ class Catalogue():
         """
         return self
 
-    def count(self, query: CatalogueQuery) -> CatalogueResult:
+    def count_entity(self, query: CatalogueQuery) -> CatalogueResult:
         """Pydoc heading.
 
         Args:

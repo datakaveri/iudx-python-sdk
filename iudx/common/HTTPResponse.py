@@ -9,6 +9,7 @@ from typing import TypeVar, Generic, Dict
 
 HTTPResponse = TypeVar('T')
 
+
 class HTTPResponse(Response):
     """Class documentation. Be a little descriptive here.
 
@@ -29,7 +30,7 @@ class HTTPResponse(Response):
         self._response = Response.__init__()
         return
 
-    def json(self) -> Dict :
+    def json(self) -> Dict:
         """Pydoc heading.
 
         Args:
@@ -39,7 +40,7 @@ class HTTPResponse(Response):
         """
         return self._response.json()
 
-    def status_code(self) -> int :
+    def status_code(self) -> int:
         """Pydoc heading.
 
         Args:

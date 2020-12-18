@@ -35,18 +35,8 @@ class CatalogueQuery():
         self._filters: List[str] = []
         return
 
-    def geo(self, geoproperty: str, geometry: str, georel: str,
-                coordinates: List[Any]) -> CatalogueQuery: 
-        """Pydoc heading.
-
-        Args: 
-            argument (argument-type): argument-description
-        Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
-        """
-        return self
-
-    def property(self, key: str, value: List[str]) -> CatalogueQuery:
+    def geo_search(self, geoproperty: str, geometry: str, georel: str,
+                   coordinates: List[Any]) -> CatalogueQuery: 
         """Pydoc heading.
 
         Args:
@@ -56,7 +46,7 @@ class CatalogueQuery():
         """
         return self
 
-    def text(self, text_query: str) -> CatalogueQuery:
+    def property_search(self, key: str, value: List[str]) -> CatalogueQuery:
         """Pydoc heading.
 
         Args:
@@ -66,7 +56,17 @@ class CatalogueQuery():
         """
         return self
 
-    def add_filter(self, filters: List[str]) -> CatalogueQuery:
+    def text_search(self, text_query: str) -> CatalogueQuery:
+        """Pydoc heading.
+
+        Args:
+            argument (argument-type): argument-description
+        Returns:
+            returned-varaible (returned-varaible-type): return-variable-description
+        """
+        return self
+
+    def add_filters(self, filters: List[str]) -> CatalogueQuery:
         """Pydoc heading.
 
         Args:

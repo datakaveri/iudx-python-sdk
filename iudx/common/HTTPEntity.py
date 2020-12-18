@@ -10,6 +10,7 @@ from typing import TypeVar, Generic, Dict
 HTTPEntity = TypeVar('T')
 HTTPResponse = TypeVar('T')
 
+
 class HTTPEntity(Request):
     """Class documentation. Be a little descriptive here.
 
@@ -41,7 +42,8 @@ class HTTPEntity(Request):
         response = HTTPResponse()
         return response
 
-    def delete(self, url: str, path_params: Dict, headers: Dict) -> HTTPResponse:
+    def delete(self, url: str, path_params: Dict, 
+               headers: Dict) -> HTTPResponse:
         """Pydoc heading.
 
         Args:
