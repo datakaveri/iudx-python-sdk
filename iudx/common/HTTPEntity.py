@@ -4,7 +4,7 @@ HTTPEntity.py
 """
 
 from requests import Request, Session
-from typing import TypeVar, Generic, Dict
+from typing import TypeVar, Dict
 
 
 HTTPEntity = TypeVar('T')
@@ -43,34 +43,52 @@ class HTTPEntity(Request):
 
     def delete(self, url: str, path_params: Dict, 
                headers: Dict) -> HTTPResponse:
-        """Pydoc heading.
+        """Method to create a 'DELETE' API request and returns response.
 
         Args:
-            argument (argument-type): argument-description
+            url (String): Base URL for the API Request.
+            path_params (Dict): Parameters passed with the API Request.
+            headers (Dict): Headers passed with the API Request.
         Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+            response (HTTPResponse): HTTP Response after the API Request.
         """
-        response = HTTPResponse()
+        s = Session()
+        request = Request('DELETE', url, params=path_params, headers=headers)
+        prepared_req = request.prepare()
+
+        response: HTTPResponse = s.send(prepared_req)
         return response
 
     def post(self, url: str, body: Dict, headers: Dict) -> HTTPResponse:
-        """Pydoc heading.
+        """Method to create a 'POST' API request and returns response.
 
         Args:
-            argument (argument-type): argument-description
+            url (String): Base URL for the API Request.
+            body (Dict): Data for the body passed with the API Request.
+            headers (Dict): Headers passed with the API Request.
         Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+            response (HTTPResponse): HTTP Response after the API Request.
         """
-        response = HTTPResponse()
+        s = Session()
+        request = Request('POST', url, data=body, headers=headers)
+        prepared_req = request.prepare()
+
+        response: HTTPResponse = s.send(prepared_req)
         return response
 
     def update(self, url: str, body: Dict, headers: Dict) -> HTTPResponse:
-        """Pydoc heading.
+        """Method to create a 'PUT' API request and returns response.
 
         Args:
-            argument (argument-type): argument-description
+            url (String): Base URL for the API Request.
+            body (Dict): Data for the body passed with the API Request.
+            headers (Dict): Headers passed with the API Request.
         Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+            response (HTTPResponse): HTTP Response after the API Request.
         """
-        response = HTTPResponse()
+        s = Session()
+        request = Request('PUT', url, data=body, headers=headers)
+        prepared_req = request.prepare()
+
+        response: HTTPResponse = s.send(prepared_req)
         return response

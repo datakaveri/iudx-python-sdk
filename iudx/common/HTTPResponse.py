@@ -2,50 +2,38 @@
 
 HTTPEntity.py
 """
-from requests import Request
 from requests import Response
-from typing import TypeVar, Generic, Dict
+from typing import TypeVar, Dict
 
 
 HTTPResponse = TypeVar('T')
 
 
 class HTTPResponse(Response):
-    """Class documentation. Be a little descriptive here.
-
-    Args:
-        argument (argument-type): argument-description
-    Returns:
-        returned-varaible (returned-varaible-type): return-variable-description
+    """Abstract class for Response. Helps to create a modular interface
+       for the API Response in Python.
     """
 
     def __init__(self: HTTPResponse):
-        """Pydoc heading.
-
-        Args:
-            argument (argument-type): argument-description
-        Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+        """HTTPResponse base class constructor
         """
         self._response = Response.__init__()
         return
 
     def json(self) -> Dict:
-        """Pydoc heading.
+        """Method to return the json object for the response body.
 
-        Args:
-            argument (argument-type): argument-description
         Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+            result_json (Dict): Returns json data.
         """
-        return self._response.json()
+        result_json = self._response.json()
+        return result_json
 
     def status_code(self) -> int:
-        """Pydoc heading.
+        """Method to return the status code for the response.
 
-        Args:
-            argument (argument-type): argument-description
         Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+            status (Integer): Returns numerical status code for the Response.
         """
-        return self._response.status_code
+        status = self._response.status_code
+        return status
