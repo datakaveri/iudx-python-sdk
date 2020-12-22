@@ -28,7 +28,7 @@ class HTTPEntity(Request):
         Returns:
             returned-varaible (returned-varaible-type): return-variable-description
         """
-        Request.__init__()
+        Request.__init__(self)
         return
 
     def get(self, url: str, path_params: Dict, headers: Dict) -> HTTPResponse:
@@ -40,12 +40,10 @@ class HTTPEntity(Request):
             returned-varaible (returned-varaible-type): return-variable-description
         """
         s = Session()
-        reqeust = Request('GET', url, data=path_params, headers=headers)
-        prepped = reqeust.prepare()
+        request = Request('GET', url, data=path_params, headers=headers)
+        prepared_req = request.prepare()
 
-        resp = s.send(prepped)
-        print(resp)
-        response = HTTPResponse(resp)
+        response: HTTPResponse = s.send(prepared_req)
         return response
 
     def delete(self, url: str, path_params: Dict, 
