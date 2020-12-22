@@ -12,35 +12,30 @@ HTTPResponse = TypeVar('T')
 
 
 class HTTPEntity(Request):
-    """Class documentation. Be a little descriptive here.
-
-    Args:
-        argument (argument-type): argument-description
-    Returns:
-        returned-varaible (returned-varaible-type): return-variable-description
+    """Abstract class for Requests. Helps to create a modular interface
+       for the API Request in Python.
     """
 
-    def __init__(self: HTTPEntity, cert: Dict):
-        """Pydoc heading.
-
+    def __init__(self: HTTPEntity, cert: Dict=None):
+        """HTTPEntity base class constructor
         Args:
-            argument (argument-type): argument-description
-        Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+            cert (Dict): certificate for authentication.
         """
         Request.__init__(self)
         return
 
     def get(self, url: str, path_params: Dict, headers: Dict) -> HTTPResponse:
-        """Pydoc heading.
+        """Method to create a 'GET' API request and returns response.
 
         Args:
-            argument (argument-type): argument-description
+            url (String): Base URL for the API Request.
+            path_params (Dict): Parameters passed with the API Request.
+            headers (Dict): Headers passed with the API Request.
         Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+            response (HTTPResponse): HTTP Response after the API Request.
         """
         s = Session()
-        request = Request('GET', url, data=path_params, headers=headers)
+        request = Request('GET', url, params=path_params, headers=headers)
         prepared_req = request.prepare()
 
         response: HTTPResponse = s.send(prepared_req)

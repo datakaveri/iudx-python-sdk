@@ -11,16 +11,20 @@ from iudx.common.HTTPEntity import HTTPEntity
 
 
 class HTTPEntityTest(unittest.TestCase):
-    ''' Test different scenarios '''
+    """Test different scenarios for the HTTPEntity class.
+    """
 
     def __init__(self, *args, **kwargs):
+        """HTTPEntityTest base class constructor
+        """
         super(HTTPEntityTest, self).__init__(*args, **kwargs)
-        self.http_entity = HTTPEntity({"demoCert": "123"})
+        self.http_entity = HTTPEntity()
 
     def test_get(self):
-
+        """Function to test the 'get' method for HTTPEntity.
+        """
         self.testVector = {}
-        with open("./tests/catalogue/testVector_HTTPEntity.json", "r") as f:
+        with open("./tests/HTTPEntity/testVector_HTTPEntity.json", "r") as f:
             self.testVector = json.load(f)
 
         result = self.http_entity.get(
