@@ -3,7 +3,7 @@
 HTTPEntity.py
 """
 
-from requests import Request
+from requests import Request, Session
 from typing import TypeVar, Generic, Dict
 
 
@@ -39,7 +39,13 @@ class HTTPEntity(Request):
         Returns:
             returned-varaible (returned-varaible-type): return-variable-description
         """
-        response = HTTPResponse()
+        s = Session()
+        reqeust = Request('GET', url, data=path_params, headers=headers)
+        prepped = reqeust.prepare()
+
+        resp = s.send(prepped)
+        print(resp)
+        response = HTTPResponse(resp)
         return response
 
     def delete(self, url: str, path_params: Dict, 

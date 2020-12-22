@@ -5,7 +5,7 @@ Catalogue.py
 
 from typing import TypeVar, Generic, Any, List, Dict
 
-from iudx.cat import Catalogue
+# from iudx.cat import Catalogue
 
 Catalogue = TypeVar("T")
 CatalogueResult = TypeVar("T")
