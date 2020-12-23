@@ -34,8 +34,16 @@ class HTTPEntity(Request):
         Returns:
             response (HTTPResponse): HTTP Response after the API Request.
         """
+        self._path_params = {}
+        for key in path_params.keys():
+            self._path_params[key] = str(path_params[key]
+                                         ).replace("\'", "").replace('\"', '')
+
         s = Session()
-        request = Request('GET', url, params=path_params, headers=headers)
+        request = Request('GET',
+                          url,
+                          params=self._path_params,
+                          headers=headers)
         prepared_req = request.prepare()
 
         response: HTTPResponse = s.send(prepared_req)
@@ -52,8 +60,16 @@ class HTTPEntity(Request):
         Returns:
             response (HTTPResponse): HTTP Response after the API Request.
         """
+        self._path_params = {}
+        for key in path_params.keys():
+            self._path_params[key] = str(path_params[key]
+                                         ).replace("\'", "").replace('\"', '')
+
         s = Session()
-        request = Request('DELETE', url, params=path_params, headers=headers)
+        request = Request('DELETE',
+                          url,
+                          params=self._path_params,
+                          headers=headers)
         prepared_req = request.prepare()
 
         response: HTTPResponse = s.send(prepared_req)
