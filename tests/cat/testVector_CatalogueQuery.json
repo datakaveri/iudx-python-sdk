@@ -1,0 +1,60 @@
+{
+    "geo_params": [
+        {
+            "geoproperty": "location", 
+            "georel": "within", 
+            "geometry": "Point", 
+            "coordinates": [73.927285,18.502712]
+        },
+        {
+            "geoproperty": "location", 
+            "georel": "within", 
+            "geometry": "Polygon", 
+            "coordinates": [73.927285,18.502712]
+        },
+        {
+            "geoproperty": "location", 
+            "georel": "intersects", 
+            "geometry": "Polygon", 
+            "coordinates": [73.927285,18.502712]
+        },
+        {
+            "geoproperty": "location", 
+            "georel": "disjoint", 
+            "geometry": "Polygon", 
+            "coordinates": [73.927285,18.502712]
+        },
+        {
+            "geoproperty": "location", 
+            "georel": "intersects", 
+            "geometry": "LineString", 
+            "coordinates": [73.927285,18.502712]
+        },
+        {
+            "geoproperty": "location", 
+            "georel": "within", 
+            "geometry": "bbox", 
+            "coordinates": [73.927285,18.502712]
+        }
+
+    ],
+
+    "property_params": [
+        {"key": "type", "value": ["iudx:ResourceGroup"]},
+        {"key": "provider", "value": ["iudx:ResourceGroup", "iudx:server"]},
+        {"key": "resourceGroup", "value": ["iudx:ResourceGroup", "iudx:server"]}
+    ],
+
+    "text_params": [
+        "aqm",
+        "pollution",
+        "co2"
+    ],
+
+    "filter_params": [
+        {"filter_list": ["id"]},
+        {"filter_list": ["id","provider"]},
+        {"filter_list": ["id","provider","type","resourceServer"]}
+    ]
+
+}
