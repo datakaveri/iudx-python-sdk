@@ -99,7 +99,7 @@ class CatalogueQuery():
                        "geometry=" + self._geometry + "&" +
                        "coordinates=" + str(self._coordinates)
                        )
-            
+
             # if opts != "":
             #     opts += "&"
             opts += geoOpts
@@ -111,14 +111,14 @@ class CatalogueQuery():
                             .replace("\'", "")
                             .replace('\"', '')
                             + "]")
-            
+
             if opts != "":
                 opts += "&"
             opts += propertyOpts
 
         if self._text_query is not None:
             textOpts = ("q=" + self._text_query)
-           
+
             if opts != "":
                 opts += "&"
             opts += textOpts
@@ -128,7 +128,7 @@ class CatalogueQuery():
                           str(self._filters)
                           .replace("\'", "")
                           .replace('\"', ''))
-            
+
             if opts != "":
                 opts += "&"
             opts += filterOpts

@@ -48,18 +48,21 @@ class HTTPResponse {
 class CatalogueQuery {
     -- private variables--
     str _geoproperty, _geometry, _georel
+    int _max_distance
     list _coordinates
-    str _text_query
     list<str> _key
     list<list<str>> _value
+    str _text_query
     list<str> _filters
     -- public methods --
     CatalogueQuery geo_search(str geoproperty,
-        \t str geometry, str, georel, list coordinates)
+        \t str geometry, str georel, 
+        \t int _max_distance, list coordinates)
     CatalogueQuery property_search(str key,
                         \t <list<str>> value)
     CatalogueQuery text_search(str text_query)
     CatalogueQuery add_filters(list<str> filters)
+    str get_query()
 }
 
 
