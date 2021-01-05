@@ -9,12 +9,8 @@ CatalogueQuery = TypeVar('T')
 
 
 class CatalogueQuery():
-    """Class documentation. Be a little descriptive here.
-
-    Args:
-        argument (argument-type): argument-description
-    Returns:
-        returned-varaible (returned-varaible-type): return-variable-description
+    """Abstract class for Catalogue Query. Helps to create a modular interface
+       for the API to construct query in Python.
     """
 
     def __init__(self: CatalogueQuery):

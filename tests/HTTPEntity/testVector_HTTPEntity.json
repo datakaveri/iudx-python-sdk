@@ -1,17 +1,12 @@
 {
-    "prod_urls": "https://api.catalogue.iudx.org.in/iudx/cat/v1/search",
-
-    "dev_urls": "https://api.catalogue.iudx.io/iudx/cat/v1/search",
+    "cat_url": "https://api.catalogue.iudx.io/iudx/cat/v1/search",
 
     "headers": {"content-type": "application/json"},
 
     "params": [
-      
-        {"property": ["tags", "provider"],
-            "value": [["aqm", "pollution"], ["varanasismartcity.gov.in/62d1f729edd3d2a1a090cb1c6c89356296963d55"]]},
-        {"q": "aqm"},
-        {"q": "co2"},
-        {"geoproperty": "location", "georel": "within", "maxDistance": 10000, "geometry": "Point", "coordinates": [73.927285,18.502712]}
-
-    ] 
+        "q=aqm",
+        "q=co2",
+        "geoproperty=location&georel=within&maxDistance=5000&geometry=Point&coordinates=[73.927285,18.502712]",
+        "property=[type]&value=[[iudx:ResourceGroup]]"
+    ]
 }

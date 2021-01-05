@@ -1,38 +1,34 @@
 """Module doc string. Leave empty for now.
+TODO: query param validation.
 
 Catalogue.py
 """
-
 from typing import TypeVar, Generic, Any, List, Dict
 
-# from iudx.cat import Catalogue
+from iudx.common.HTTPEntity import HTTPEntity
+from iudx.common.HTTPResponse import HTTPResponse
 
-Catalogue = TypeVar("T")
-CatalogueResult = TypeVar("T")
-CatalogueQuery = TypeVar("T")
+from iudx.cat.CatalogueQuery import CatalogueQuery
+from iudx.cat.CatalogueResult import CatalogueResult
 
 
 class Catalogue():
-    """Class documentation. Be a little descriptive here.
-
-    Args:
-        argument (argument-type): argument-description
-    Returns:
-        returned-varaible (returned-varaible-type): return-variable-description
+    """Abstract class for Catalogue. Helps to create a modular interface
+       for the API to implement queries.
     """
 
     def __init__(self, cat_url: str=None, token: str=None,
                  headers: Dict[str, str]=None):
-        """Pydoc heading.
+        """Catalogue base class constructor
 
         Args:
-            argument (argument-type): argument-description
-        Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+            cat_url (String): catalogue url for creating a request.
+            token (String): token request for the API.
+            headers (Dict[str, str]): Headers passed with the API Request.
         """
-        self.url: str = ""
-        self.token: str = ""
-        self.headers: Dict[str, str] = ""
+        self.url: str = cat_url
+        self.token: str = token
+        self.headers: Dict[str, str] = headers
         return
 
     def status(self) -> bool:
@@ -46,47 +42,93 @@ class Catalogue():
         return self
 
     def search_entity(self, query: CatalogueQuery) -> CatalogueResult:
-        """Pydoc heading.
+        """Method to get the search response for entities, based on a query.
 
         Args:
-            argument (argument-type): argument-description
+            query (CatalogueQuery): A query object of CatalogueQuery class.
         Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+            cat_result (CatalogueResult): returns a CatalogueResult object.
         """
-        return self
+        url = self.url + "/search"
+        url = url + "?" + query.get_query()
+        http_entity = HTTPEntity()
+        response: HTTPResponse = http_entity.get(url, self.headers)
+        result_data = response.json()
+
+        cat_result = CatalogueResult()
+        cat_result.documents = result_data["results"]
+        cat_result.total_hits = result_data["totalHits"]
+        cat_result.status = result_data["status"]
+        return cat_result
 
     def count_entity(self, query: CatalogueQuery) -> CatalogueResult:
-        """Pydoc heading.
+        """Method to get the count response for entities, based on a query.
 
         Args:
-            argument (argument-type): argument-description
+            query (CatalogueQuery): A query object of CatalogueQuery class.
         Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+            cat_result (CatalogueResult): returns a CatalogueResult object.
         """
-        return self
+        url = self.url + "/count"
+        url = url + "?" + query.get_query()
+        http_entity = HTTPEntity()
+        response: HTTPResponse = http_entity.get(url, self.headers)
+        result_data = response.json()
+
+        cat_result = CatalogueResult()
+        cat_result.documents = result_data["results"]
+        cat_result.total_hits = result_data["totalHits"]
+        cat_result.status = result_data["status"]
+        return cat_result
 
     def list_entity(self, entity_type: str) -> CatalogueResult:
-        """Pydoc heading.
+        """Method to get the list response for entities, based on an entity type.
 
         Args:
-            argument (argument-type): argument-description
+            entity_type (String): type must be either resource,
+                resourceGroup, resourceServer.
         Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+            cat_result (CatalogueResult): returns a CatalogueResult object.
         """
-        return self
+        url = self.url + "/list"
+        url = url + "/" + entity_type
+        http_entity = HTTPEntity()
+        response: HTTPResponse = http_entity.get(url, self.headers)
+        result_data = response.json()
+
+        cat_result = CatalogueResult()
+        cat_result.documents = result_data["results"]
+        cat_result.total_hits = result_data["totalHits"]
+        cat_result.status = result_data["status"]
+        return cat_result
 
     def get_related_entity(self, iid: str, rel: str) -> CatalogueResult:
-        """Pydoc heading.
+        """Method to get the relationship response for entities,
+                based on their id and relation.
 
         Args:
-            argument (argument-type): argument-description
+            iid (String): Id of the entity.
+            rel (String): Relationship attribute of the entity
+                whose id is provided.
         Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+            cat_result (CatalogueResult): returns a CatalogueResult object.
         """
-        return self
+        url = self.url + "/relationship"
+        url = url + "?" + "id=" + iid + "&" + "rel=" + rel
+        http_entity = HTTPEntity()
+        response: HTTPResponse = http_entity.get(url, self.headers)
+        result_data = response.json()
+
+        cat_result = CatalogueResult()
+        cat_result.documents = result_data["results"]
+        cat_result.total_hits = result_data["totalHits"]
+        cat_result.status = result_data["status"]
+        return cat_result
 
     def rel_search(self, query: CatalogueQuery) -> CatalogueResult:
         """Pydoc heading.
+        TODO: Implement the query for relationship search in CatalogueQuery
+        before this function defination.
 
         Args:
             argument (argument-type): argument-description

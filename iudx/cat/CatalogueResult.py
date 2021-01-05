@@ -29,6 +29,8 @@ class CatalogueResult():
         self.total_hits: int = 0
         self.total_pages: int = 0
         self.current_page: int = 0
+        self.is_valid: bool = False
+        self.status: str = ""
         return
 
     def next_page(self) -> CatalogueResult:
