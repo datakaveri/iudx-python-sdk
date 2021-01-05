@@ -18,13 +18,14 @@ class HTTPEntity(Request):
 
     def __init__(self: HTTPEntity, cert: Dict=None):
         """HTTPEntity base class constructor
+
         Args:
             cert (Dict): certificate for authentication.
         """
         Request.__init__(self)
         return
 
-    def get(self, url: str, path_params: Dict, headers: Dict) -> HTTPResponse:
+    def get(self, url: str, headers: Dict) -> HTTPResponse:
         """Method to create a 'GET' API request and returns response.
 
         Args:
@@ -35,14 +36,15 @@ class HTTPEntity(Request):
             response (HTTPResponse): HTTP Response after the API Request.
         """
         s = Session()
-        request = Request('GET', url, params=path_params, headers=headers)
+        request = Request('GET',
+                          url,
+                          headers=headers)
         prepared_req = request.prepare()
 
         response: HTTPResponse = s.send(prepared_req)
         return response
 
-    def delete(self, url: str, path_params: Dict, 
-               headers: Dict) -> HTTPResponse:
+    def delete(self, url: str, headers: Dict) -> HTTPResponse:
         """Method to create a 'DELETE' API request and returns response.
 
         Args:
@@ -53,7 +55,9 @@ class HTTPEntity(Request):
             response (HTTPResponse): HTTP Response after the API Request.
         """
         s = Session()
-        request = Request('DELETE', url, params=path_params, headers=headers)
+        request = Request('DELETE',
+                          url,
+                          headers=headers)
         prepared_req = request.prepare()
 
         response: HTTPResponse = s.send(prepared_req)

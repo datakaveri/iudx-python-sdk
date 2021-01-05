@@ -1,0 +1,41 @@
+{
+    "text_params": [
+        "aqm",
+        "pollution",
+        "co2"
+    ],
+
+    "entity_type": [
+        "provider",
+        "resourceGroup",
+        "tags"
+    ],
+
+    "related_entity": [
+        [
+            "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc/rs.iudx.io/aqm-bosch-climo",
+            "resource"
+        ],
+        [
+            "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc/rs.iudx.io/aqm-bosch-climo/Pune Railway Station_2811", 
+            "resourceGroup"
+        ],
+        [
+            "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc/rs.iudx.io/aqm-bosch-climo/aqm_test_1", 
+            "resourceGroup"
+        ],
+
+        [
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood",
+            "resource"
+        ],
+        [
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR015",
+            "resourceGroup"
+        ],
+        [
+            "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc/rs.iudx.io/aqm-bosch-climo/Pune Railway Station_2811",
+            "provider"
+        ]
+    ]
+}

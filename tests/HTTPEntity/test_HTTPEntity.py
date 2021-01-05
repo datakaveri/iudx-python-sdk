@@ -27,19 +27,17 @@ class HTTPEntityTest(unittest.TestCase):
         with open("./tests/HTTPEntity/testVector_HTTPEntity.json", "r") as f:
             self.testVector = json.load(f)
 
-        result = self.http_entity.get(
-            url=self.testVector["prod_urls"][0],
-            path_params=self.testVector["params"][0],
-            headers=self.testVector["headers"][0])
+        for param in self.testVector["params"]:
+            result = self.http_entity.get(
+                url=self.testVector["cat_url"] + "?" + param,
+                headers=self.testVector["headers"])
 
-        self.assertEqual(result.status_code, 200)
-        self.assertNotEqual(result.status_code, 500)
-        self.assertNotEqual(result.status_code, 404)
-        self.assertNotEqual(result.status_code, 400)
-
-        # print(result.json())
+            self.assertEqual(result.status_code, 200)
+            self.assertNotEqual(result.status_code, 500)
+            self.assertNotEqual(result.status_code, 404)
+            self.assertNotEqual(result.status_code, 400)
+            # print(result.json())
 
 
 if __name__ == '__main__':
     unittest.main()
-    

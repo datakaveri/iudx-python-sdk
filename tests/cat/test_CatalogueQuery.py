@@ -34,7 +34,7 @@ class CatalogueQueryTest(unittest.TestCase):
                 geoproperty=geo_param["geoproperty"],
                 geometry=geo_param["geometry"],
                 georel=geo_param["georel"],
-                max_distance=10000,
+                max_distance=geo_param["max_distance"],
                 coordinates=geo_param["coordinates"]
                 ).get_query()
 
@@ -84,7 +84,7 @@ class CatalogueQueryTest(unittest.TestCase):
             geoproperty=self.testVector["geo_params"][0]["geoproperty"],
             geometry=self.testVector["geo_params"][0]["geometry"],
             georel=self.testVector["geo_params"][0]["georel"],
-            max_distance=10000,
+            max_distance=self.testVector["geo_params"][0]["max_distance"],
             coordinates=self.testVector["geo_params"][0]["coordinates"]
             ).property_search(
             key=self.testVector["property_params"][0]["key"],

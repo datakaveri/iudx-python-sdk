@@ -4,36 +4,42 @@
             "geoproperty": "location", 
             "georel": "within", 
             "geometry": "Point", 
+            "max_distance": 10000,
             "coordinates": [73.927285,18.502712]
         },
         {
             "geoproperty": "location", 
             "georel": "within", 
-            "geometry": "Polygon", 
+            "geometry": "Polygon",
+            "max_distance": 10000, 
             "coordinates": [73.927285,18.502712]
         },
         {
             "geoproperty": "location", 
             "georel": "intersects", 
             "geometry": "Polygon", 
+            "max_distance": 10000,
             "coordinates": [73.927285,18.502712]
         },
         {
             "geoproperty": "location", 
             "georel": "disjoint", 
             "geometry": "Polygon", 
+            "max_distance": 10000,
             "coordinates": [73.927285,18.502712]
         },
         {
             "geoproperty": "location", 
             "georel": "intersects", 
             "geometry": "LineString", 
+            "max_distance": 10000,
             "coordinates": [73.927285,18.502712]
         },
         {
             "geoproperty": "location", 
             "georel": "within", 
             "geometry": "bbox", 
+            "max_distance": 10000,
             "coordinates": [73.927285,18.502712]
         }
 
