@@ -29,17 +29,15 @@ class HTTPEntityTest(unittest.TestCase):
 
         for param in self.testVector["params"]:
             result = self.http_entity.get(
-                url=self.testVector["prod_urls"],
-                path_params=param,
+                url=self.testVector["cat_url"] + "?" + param,
                 headers=self.testVector["headers"])
 
-        self.assertEqual(result.status_code, 200)
-        self.assertNotEqual(result.status_code, 500)
-        self.assertNotEqual(result.status_code, 404)
-        self.assertNotEqual(result.status_code, 400)
-        # print(result.json())
+            self.assertEqual(result.status_code, 200)
+            self.assertNotEqual(result.status_code, 500)
+            self.assertNotEqual(result.status_code, 404)
+            self.assertNotEqual(result.status_code, 400)
+            # print(result.json())
 
 
 if __name__ == '__main__':
     unittest.main()
-    
