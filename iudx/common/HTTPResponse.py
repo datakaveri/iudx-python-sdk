@@ -17,10 +17,10 @@ class HTTPResponse(Response):
     def __init__(self: HTTPResponse):
         """HTTPResponse base class constructor
         """
-        self._response = Response.__init__()
+        self._response = Response.__init__(self)
         return
 
-    def json(self) -> Dict:
+    def get_json(self) -> Dict:
         """Method to return the json object for the response body.
 
         Returns:
@@ -29,7 +29,7 @@ class HTTPResponse(Response):
         result_json = self._response.json()
         return result_json
 
-    def status_code(self) -> int:
+    def get_status_code(self) -> int:
         """Method to return the status code for the response.
 
         Returns:

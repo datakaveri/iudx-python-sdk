@@ -1,0 +1,73 @@
+@startuml
+class ResourceServer  {
+    <extends HttpEntity>
+  -- public variables --
+  Enum IUDXEntityEnum
+  str url (default to staticurl)
+  optional str token (required for onboarders)
+  optional list headers
+  -- public methods --
+  ResourceServer init(str rs_url, optional str token, option dict headers)
+  bool status() // check status
+  ResourceResult get_data(ResourceQuery query) // 
+}
+
+class HTTPEntity  {
+  <extends Requests>
+  -- public variables --
+  dict cert // (str cert, str key)
+  -- public methods --
+  HTTPResponse get(str url, dict headers)
+  HTTPResponse delete(str url, dict headers)
+  HTTPResponse post(str url, str body, dict headers)
+  HTTPResponse update(str url, str body, dict headers)
+}
+
+class HTTPResponse {
+  <extends requests.Response>
+  -- private variables --
+  Response _response
+  -- public methods --
+  dict get_json()
+  int get_status_code()
+
+}
+
+
+class ResourceQuery {
+    -- private variables--
+    str _geoproperty, _geometry, _georel
+    int _max_distance
+    list _coordinates
+    str _start_time
+    str _end_time
+    str _key
+    <str/float> _value
+    str _operation
+    list<str> _filters
+    list<str> _entities
+    -- public methods --
+    ResourceQuery add_entity(String iid) // add an id to entities
+    ResourceQuery geo_search(str geoproperty,
+        \t str geometry, str georel, 
+        \t int _max_distance, list coordinates)
+    ResourceQuery during_search(str start_time, str end_time)
+    ResourceQuery property_search(str key,
+        \t str/float value, str operation)
+    ResourceQuery add_filters(list<str> filters)
+    str latest_search()
+    str get_query()
+}
+
+
+class ResourceResult {
+    -- public variables --
+    list<dict> results
+    int type
+    str title
+    -- public --
+}
+
+
+
+@enduml
