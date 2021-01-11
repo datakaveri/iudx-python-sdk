@@ -1,0 +1,71 @@
+{
+    "entities":[
+        "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta"
+    ],
+
+    "geo_params": [
+        {
+            "geoproperty": "location", 
+            "georel": "within", 
+            "geometry": "Point", 
+            "max_distance": 10000,
+            "coordinates": [73.927285,18.502712]
+        },
+        {
+            "geoproperty": "location", 
+            "georel": "within", 
+            "geometry": "Polygon",
+            "max_distance": 10000, 
+            "coordinates": [73.927285,18.502712]
+        },
+        {
+            "geoproperty": "location", 
+            "georel": "intersects", 
+            "geometry": "Polygon", 
+            "max_distance": 10000,
+            "coordinates": [73.927285,18.502712]
+        },
+        {
+            "geoproperty": "location", 
+            "georel": "disjoint", 
+            "geometry": "Polygon", 
+            "max_distance": 10000,
+            "coordinates": [73.927285,18.502712]
+        },
+        {
+            "geoproperty": "location", 
+            "georel": "intersects", 
+            "geometry": "LineString", 
+            "max_distance": 10000,
+            "coordinates": [73.927285,18.502712]
+        },
+        {
+            "geoproperty": "location", 
+            "georel": "within", 
+            "geometry": "bbox", 
+            "max_distance": 10000,
+            "coordinates": [73.927285,18.502712]
+        }
+
+    ],
+
+    "temporal_params": [
+        {
+            "start_time": "2020-06-01T14:20:00Z",
+            "end_time": "2020-06-03T15:00:00Z"
+        }
+    ],
+
+    "property_params": [
+        {"key": "speed", "value": 50, "operation": ">="},
+        {"key": "distance", "value": -124, "operation": "<"},
+        {"key": "range", "value": "250", "operation": "!="},
+        {"key": "speed", "value": "-532", "operation": "<="}
+    ],
+
+    "filters": [
+        ["id", "location"],
+        ["id", "location", "distance", "duration"],
+        ["id"]
+    ]
+}

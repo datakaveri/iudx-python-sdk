@@ -8,6 +8,7 @@ import sys
 sys.path.insert(1, './')
 
 from iudx.common.HTTPEntity import HTTPEntity
+from iudx.common.HTTPResponse import HTTPResponse
 
 
 class HTTPEntityTest(unittest.TestCase):
@@ -32,11 +33,11 @@ class HTTPEntityTest(unittest.TestCase):
                 url=self.testVector["cat_url"] + "?" + param,
                 headers=self.testVector["headers"])
 
-            self.assertEqual(result.status_code, 200)
-            self.assertNotEqual(result.status_code, 500)
-            self.assertNotEqual(result.status_code, 404)
-            self.assertNotEqual(result.status_code, 400)
-            # print(result.json())
+            self.assertEqual(result.get_status_code(), 200)
+            self.assertNotEqual(result.get_status_code(), 500)
+            self.assertNotEqual(result.get_status_code(), 404)
+            self.assertNotEqual(result.get_status_code(), 400)
+            print(result.get_json())
 
 
 if __name__ == '__main__':
