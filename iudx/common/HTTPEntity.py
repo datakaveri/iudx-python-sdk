@@ -5,10 +5,10 @@ HTTPEntity.py
 
 from requests import Request, Session
 from typing import TypeVar, Dict
-
+from iudx.common.HTTPResponse import HTTPResponse
+import json
 
 HTTPEntity = TypeVar('T')
-HTTPResponse = TypeVar('T')
 
 
 class HTTPEntity(Request):
@@ -40,8 +40,10 @@ class HTTPEntity(Request):
                           headers=headers)
         prepared_req = request.prepare()
 
-        response: HTTPResponse = s.send(prepared_req)
-        return response
+        response = s.send(prepared_req)
+        http_response = HTTPResponse()
+        http_response._response = response
+        return http_response
 
     def delete(self, url: str, headers: Dict) -> HTTPResponse:
         """Method to create a 'DELETE' API request and returns response.
@@ -58,10 +60,12 @@ class HTTPEntity(Request):
                           headers=headers)
         prepared_req = request.prepare()
 
-        response: HTTPResponse = s.send(prepared_req)
-        return response
+        response = s.send(prepared_req)
+        http_response = HTTPResponse()
+        http_response._response = response
+        return http_response
 
-    def post(self, url: str, body: Dict, headers: Dict) -> HTTPResponse:
+    def post(self, url: str, body: str, headers: Dict) -> HTTPResponse:
         """Method to create a 'POST' API request and returns response.
 
         Args:
@@ -72,13 +76,19 @@ class HTTPEntity(Request):
             response (HTTPResponse): HTTP Response after the API Request.
         """
         s = Session()
-        request = Request('POST', url, data=body, headers=headers)
+        request = Request('POST',
+                          url,
+                          data=body,
+                          headers=headers
+                          )
         prepared_req = request.prepare()
 
-        response: HTTPResponse = s.send(prepared_req)
-        return response
+        response = s.send(prepared_req)
+        http_response = HTTPResponse()
+        http_response._response = response
+        return http_response
 
-    def update(self, url: str, body: Dict, headers: Dict) -> HTTPResponse:
+    def update(self, url: str, body: str, headers: Dict) -> HTTPResponse:
         """Method to create a 'PUT' API request and returns response.
 
         Args:
@@ -89,8 +99,13 @@ class HTTPEntity(Request):
             response (HTTPResponse): HTTP Response after the API Request.
         """
         s = Session()
-        request = Request('PUT', url, data=body, headers=headers)
+        request = Request('PUT',
+                          url,
+                          data=body,
+                          headers=headers)
         prepared_req = request.prepare()
 
-        response: HTTPResponse = s.send(prepared_req)
-        return response
+        response = s.send(prepared_req)
+        http_response = HTTPResponse()
+        http_response._response = response
+        return http_response
