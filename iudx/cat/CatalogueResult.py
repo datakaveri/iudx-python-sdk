@@ -8,21 +8,12 @@ CatalogueResult = TypeVar('T')
 
 
 class CatalogueResult():
-    """Class documentation. Be a little descriptive here.
-
-    Args:
-        argument (argument-type): argument-description
-    Returns:
-        returned-varaible (returned-varaible-type): return-variable-description
+    """Abstract class for Resource Result. Helps to create a modular
+       interface for the API response results.
     """
 
     def __init__(self: CatalogueResult):
-        """Pydoc heading.
-
-        Args:
-            argument (argument-type): argument-description
-        Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
+        """CatalogueResult base class constructor
         """
         self._page_size: str = 1000
         self.documents: List[Dict] = ""

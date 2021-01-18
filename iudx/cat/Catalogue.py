@@ -53,12 +53,13 @@ class Catalogue():
         url = url + "?" + query.get_query()
         http_entity = HTTPEntity()
         response: HTTPResponse = http_entity.get(url, self.headers)
-        result_data = response.json()
+        result_data = response.get_json()
 
         cat_result = CatalogueResult()
-        cat_result.documents = result_data["results"]
-        cat_result.total_hits = result_data["totalHits"]
-        cat_result.status = result_data["status"]
+        if response.get_status_code() == 200:
+            cat_result.documents = result_data["results"]
+            cat_result.total_hits = result_data["totalHits"]
+            cat_result.status = result_data["status"]
         return cat_result
 
     def count_entity(self, query: CatalogueQuery) -> CatalogueResult:
@@ -73,12 +74,13 @@ class Catalogue():
         url = url + "?" + query.get_query()
         http_entity = HTTPEntity()
         response: HTTPResponse = http_entity.get(url, self.headers)
-        result_data = response.json()
+        result_data = response.get_json()
 
         cat_result = CatalogueResult()
-        cat_result.documents = result_data["results"]
-        cat_result.total_hits = result_data["totalHits"]
-        cat_result.status = result_data["status"]
+        if response.get_status_code() == 200:
+            cat_result.documents = result_data["results"]
+            cat_result.total_hits = result_data["totalHits"]
+            cat_result.status = result_data["status"]
         return cat_result
 
     def list_entity(self, entity_type: str) -> CatalogueResult:
@@ -94,12 +96,13 @@ class Catalogue():
         url = url + "/" + entity_type
         http_entity = HTTPEntity()
         response: HTTPResponse = http_entity.get(url, self.headers)
-        result_data = response.json()
+        result_data = response.get_json()
 
         cat_result = CatalogueResult()
-        cat_result.documents = result_data["results"]
-        cat_result.total_hits = result_data["totalHits"]
-        cat_result.status = result_data["status"]
+        if response.get_status_code() == 200:
+            cat_result.documents = result_data["results"]
+            cat_result.total_hits = result_data["totalHits"]
+            cat_result.status = result_data["status"]
         return cat_result
 
     def get_related_entity(self, iid: str, rel: str) -> CatalogueResult:
@@ -117,12 +120,13 @@ class Catalogue():
         url = url + "?" + "id=" + iid + "&" + "rel=" + rel
         http_entity = HTTPEntity()
         response: HTTPResponse = http_entity.get(url, self.headers)
-        result_data = response.json()
+        result_data = response.get_json()
 
         cat_result = CatalogueResult()
-        cat_result.documents = result_data["results"]
-        cat_result.total_hits = result_data["totalHits"]
-        cat_result.status = result_data["status"]
+        if response.get_status_code() == 200:
+            cat_result.documents = result_data["results"]
+            cat_result.total_hits = result_data["totalHits"]
+            cat_result.status = result_data["status"]
         return cat_result
 
     def rel_search(self, query: CatalogueQuery) -> CatalogueResult:

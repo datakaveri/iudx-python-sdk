@@ -1,0 +1,35 @@
+{
+    "url": "https://rs.iudx.io/ngsi-ld/v1",
+
+    "headers": [
+        {
+            "Content-Type": "application/json",
+            "token": "authtest.iudx.io/vasanth.rajaraman@datakaveri.org/1c2057cf82333981ebb0c575f6e0be20"
+        },
+        {
+            "Content-Type": "application/json",
+            "token": "authtest.iudx.io/vasanth.rajaraman@datakaveri.org/d63ed90b818c43d5774d127818fa73df"
+        }
+    ],
+
+    "entities":[
+        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+    ],
+
+    "time_params": [
+        {
+            "time": "2020-09-18T14:20:00Z",
+            "endtime": "2020-09-19T14:20:00Z"
+        }
+    ],
+
+    "geo_params": [
+        {
+            "geometry": "Point",
+            "coordinates": [21.178,72.834],
+            "georel": "near",
+            "maxDistance": 10,
+            "geoproperty": "location"
+        }
+    ]
+}

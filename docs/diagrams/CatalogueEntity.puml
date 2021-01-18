@@ -30,8 +30,8 @@ class HTTPEntity  {
   -- public methods --
   HTTPResponse get(str url, dict headers)
   HTTPResponse delete(str url, dict headers)
-  HTTPResponse post(str url, dict body, dict headers)
-  HTTPResponse update(str url, dict body, dict headers)
+  HTTPResponse post(str url, str body, dict headers)
+  HTTPResponse update(str url, str body, dict headers)
 }
 
 class HTTPResponse {
@@ -39,8 +39,8 @@ class HTTPResponse {
   -- private variables --
   Response _response
   -- public methods --
-  dict json()
-  int status_code()
+  dict get_json()
+  int get_status_code()
 
 }
 

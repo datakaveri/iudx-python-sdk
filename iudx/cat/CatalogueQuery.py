@@ -16,7 +16,7 @@ class CatalogueQuery():
     def __init__(self: CatalogueQuery):
         """CatalogueQuery base class constructor
         """
-        self._groproperty: str = None
+        self._geoproperty: str = None
         self._geometry: str = None
         self._georel: str = None
         self._max_distance: int = None
@@ -38,9 +38,9 @@ class CatalogueQuery():
             geometry (String): GeoJson geometries.
             georel (String): Geo-relationship.
             max_distance (Integer): Radius from the center in meters.
-            coordinates (List[Any]): The Coordinates of the geometry
+            coordinates (List[Any]): The Coordinates of the geometry.
         """
-        self._groproperty = geoproperty
+        self._geoproperty = geoproperty
         self._geometry = geometry
         self._georel = georel
         self._max_distance = max_distance
@@ -81,7 +81,7 @@ class CatalogueQuery():
         """Method to build query for geo, text, propery and filter.
 
         Returns:
-            opts (CatalogueQuery): options as a string for a GET method.
+            opts (String): options as a string for the generated query.
         """
         geo_opts: str = ""
         property_opts: str = ""
@@ -89,8 +89,8 @@ class CatalogueQuery():
         filter_opts: str = ""
         opts: str = ""
 
-        if self._groproperty is not None:
-            geo_opts = ("geoproperty=" + self._groproperty + "&" +
+        if self._geoproperty is not None:
+            geo_opts = ("geoproperty=" + self._geoproperty + "&" +
                         "georel=" + self._georel + "&" +
                         "maxDistance=" + str(self._max_distance) + "&" +
                         "geometry=" + self._geometry + "&" +
