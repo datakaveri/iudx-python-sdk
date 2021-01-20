@@ -1,0 +1,43 @@
+@startuml
+class IUDXEntity  {
+  Catalogue catalogue
+  -- private variables --
+  ResourceServer _rs
+  list<Resource> resources
+  ResourceGroup resourceGroups
+
+  -- public methods --
+  Entities get_entites(CatalogueQuery query)
+  Entity get_entity(str entity_id)
+}
+
+
+class Entities {
+    <extends iterable>
+    List<Entity> _entities
+}
+
+
+class Entity {
+    -- public variables --
+    ResourceServer rs
+    list<str> resources
+    -- private variables --
+    string _iudx_entity_type
+    string _voc_url
+    dict _cat_doc
+    dict _data_descriptor
+    list<DataDescriptor> _geo_properties
+    list<DataDescriptor> _time_properties
+    list<DataDescriptor> _quantitative_properties
+    list<DataDescriptor> _properties
+    -- public methods --
+    Entity set_rs(str rs_url, optional str token, option dict headers)
+    pandas.DataFrame latest()
+    pandas.DataFrame during_search(str start_time, str end_time)
+    pandas.DataFrame property_search(str key, str/float value, str operation)
+    pandas.DataFrame geo_search(str geoproperty,
+        \t str geometry, str georel, 
+        \t int _max_distance, list coordinates)
+}
+@enduml
