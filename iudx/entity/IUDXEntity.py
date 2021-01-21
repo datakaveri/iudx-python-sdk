@@ -27,10 +27,29 @@ class IUDXEntity():
             returned-varaible (returned-varaible-type): return-variable-description
         """
         self.catalogue: Catalogue = None
+
         self._rs: ResourceServer = None
-        self.resources: List[Dict] = None
-        self.resourceGroups: Dict = None
+        self._resources: List[Dict] = None
+        self._resourceGroups: Dict = None
         return
+
+    def get_resources(self) -> List[Dict]:
+        """Pydoc heading.
+        Args:
+            argument (argument-type): argument-description
+        Returns:
+            returned-varaible (returned-varaible-type): return-variable-description
+        """
+        return self._resources
+
+    def get_resourceGroups(self) -> Dict:
+        """Pydoc heading.
+        Args:
+            argument (argument-type): argument-description
+        Returns:
+            returned-varaible (returned-varaible-type): return-variable-description
+        """
+        return self._resourceGroups
 
     def get_entites(self, query: CatalogueQuery=None) -> Entities:
         """Pydoc heading.
