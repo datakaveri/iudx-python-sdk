@@ -3,8 +3,8 @@ class IUDXEntity  {
   Catalogue catalogue
   -- private variables --
   ResourceServer _rs
-  list<Resource> resources
-  ResourceGroup resourceGroups
+  list<dict> resources
+  Dict resourceGroups
 
   -- public methods --
   Entities get_entites(CatalogueQuery query)
@@ -27,10 +27,10 @@ class Entity {
     string _voc_url
     dict _cat_doc
     dict _data_descriptor
-    list<DataDescriptor> _geo_properties
-    list<DataDescriptor> _time_properties
-    list<DataDescriptor> _quantitative_properties
-    list<DataDescriptor> _properties
+    list<dict> _geo_properties
+    list<dict> _time_properties
+    list<dict> _quantitative_properties
+    list<dict> _properties
     -- public methods --
     Entity set_rs(str rs_url, optional str token, option dict headers)
     pandas.DataFrame latest()
