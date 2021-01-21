@@ -3,10 +3,12 @@ class IUDXEntity  {
   Catalogue catalogue
   -- private variables --
   ResourceServer _rs
-  list<dict> resources
-  Dict resourceGroups
+  list<dict> _resources
+  Dict _resourceGroups
 
   -- public methods --
+  list<dict> get_resources()
+  Dict get_resourceGroups()
   Entities get_entites(CatalogueQuery query)
   Entity get_entity(str entity_id)
 }
