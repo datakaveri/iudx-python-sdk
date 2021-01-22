@@ -4,8 +4,13 @@ Entity.py
 """
 from typing import TypeVar, Generic, Any, List, Dict
 
+from iudx.common.HTTPEntity import HTTPEntity
+from iudx.common.HTTPResponse import HTTPResponse
+
 from iudx.cat.Catalogue import Catalogue
 from iudx.rs.ResourceServer import ResourceServer
+from iudx.rs.ResourceQuery import ResourceQuery
+from iudx.entity.IUDXEntity import IUDXEntity
 
 import pandas as pd
 
@@ -29,6 +34,7 @@ class Entity():
         self.resources: List[str] = None
 
         self._iudx_entity_type: str = None
+        self._iudx_entity_id: str = None
         self._voc_url: str = None
         self._cat_doc: Dict = None
         self._data_descriptor: Dict = None
@@ -46,6 +52,8 @@ class Entity():
         Returns:
             returned-varaible (returned-varaible-type): return-variable-description
         """
+        self.rs = ResourceServer(rs_url, token, headers)
+
         return self
 
     def latest(self) -> pd.DataFrame:
@@ -55,7 +63,19 @@ class Entity():
         Returns:
             returned-varaible (returned-varaible-type): return-variable-description
         """
-        return self
+        df = pd.DataFrame()
+        self.resources = IUDXEntity.get_resources(self.iudx_entity_id)
+        for resource in self.resources:
+           query = ResourceQuery()
+           query.add_entity(resource)
+           result = self.rs.get_latest(query)
+           
+           if result.type==200:
+               df_rs = pd.DataFrame(result.results)
+               df.append(df_rs)
+            #TODO: error handling
+
+        return df
 
     def during_search(self, start_time: str=None,
                       end_time: str=None) -> pd.DataFrame:
@@ -65,7 +85,20 @@ class Entity():
         Returns:
             returned-varaible (returned-varaible-type): return-variable-description
         """
-        return self
+        df = pd.DataFrame()
+        self.resources = IUDXEntity.get_resources(self._iudx_entity_id)
+        for resource in self.resources:
+            query = ResourceQuery()
+            query.add_entity(resource)
+            query.during_search(start_time, end_time)
+
+            result = self.rs.get_during(query)
+            if result.type==200:
+                df_rs = pd.DataFrame(result.results)
+                df.append(df_rs)
+             #TODO: error handling
+
+        return df
 
     def property_search(self, key: str=None, value: str_or_float=None, 
                         operation: str=None) -> pd.DataFrame:

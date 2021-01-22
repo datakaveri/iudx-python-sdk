@@ -91,3 +91,31 @@ class ResourceServer():
             rs_result.type = result_data["type"]
             rs_result.title = result_data["title"]
         return rs_result
+
+    def get_during(self, query: ResourceQuery) -> ResourceResult:
+        """Method to do temporal search.
+
+        Args:
+            query (ResourceQuery): A query object of ResourceQuery class
+        Returns:
+            rs_result (ResourceResult): returns a ResourceResult object.
+        """
+        url = self.url + "/temporal"
+        url = url + query.latest_search()
+        http_entity = HTTPEntity()
+        response: HTTPResponse = http_entity.get(
+            url,
+            query.get_query(),
+            self.headers
+        )
+        result_data = response.get_json()
+
+        rs_result = ResourceResult()
+        if response.get_status_code()==200:
+            rs.result_type = result_data["type"]
+            rs_result.title = result_data["title"]
+            rs_result.results = result_data["results"]
+        else:
+            rs_result.type = result_data["type"]
+            rs_result.title = result_data["title"]
+        return rs_result

@@ -33,7 +33,7 @@ class IUDXEntity():
         self._resourceGroups: Dict = None
         return
 
-    def get_resources(self) -> List[Dict]:
+    def get_resources(self, resourceGroup: str=None) -> List[Dict]:
         """Pydoc heading.
         Args:
             argument (argument-type): argument-description
@@ -54,7 +54,7 @@ class IUDXEntity():
     def get_entites(self, query: CatalogueQuery=None) -> Entities:
         """Pydoc heading.
         Args:
-            argument (argument-type): argument-description
+            argument (argument-type): argument  -description
         Returns:
             returned-varaible (returned-varaible-type): return-variable-description
         """
