@@ -4,9 +4,6 @@ Entity.py
 """
 from typing import TypeVar, Generic, Any, List, Dict
 
-from iudx.common.HTTPEntity import HTTPEntity
-from iudx.common.HTTPResponse import HTTPResponse
-
 from iudx.cat.Catalogue import Catalogue
 from iudx.rs.ResourceServer import ResourceServer
 from iudx.rs.ResourceQuery import ResourceQuery
