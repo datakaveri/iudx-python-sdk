@@ -23,7 +23,8 @@ class Entities {
 class Entity {
     -- public variables --
     ResourceServer rs
-    list<str> resources
+    list<Dict> resources
+    str entity_id
     -- private variables --
     string _iudx_entity_type
     string _voc_url
