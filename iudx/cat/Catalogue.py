@@ -149,7 +149,18 @@ class Catalogue():
         Returns:
             returned-varaible (returned-varaible-type): return-variable-description
         """
-        return self
+        url = self.url + "/item"
+        url = url + "?" + "id=" + iid
+        http_entity = HTTPEntity()
+        response: HTTPResponse = http_entity.get(url, self.headers)
+        result_data = response.get_json()
+
+        cat_result = CatalogueResult()
+        if response.get_status_code() == 200:
+            cat_result.documents = result_data["results"]
+            cat_result.total_hits = result_data["totalHits"]
+            cat_result.status = result_data["status"]
+        return cat_result
 
     def create(self, item: Dict[str, Any]) -> CatalogueResult:
         """Pydoc heading.

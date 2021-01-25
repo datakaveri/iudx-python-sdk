@@ -25,6 +25,9 @@ class ResourceServer():
         self.url: str = rs_url
         self.token: str = token
         self.headers: Dict[str, str] = headers
+
+        if self.token is not None:
+            self.headers["token"] = self.token
         return
 
     def status(self) -> bool:
