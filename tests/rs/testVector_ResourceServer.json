@@ -1,25 +1,33 @@
 {
-    "url": "https://rs.iudx.io/ngsi-ld/v1",
+    "url": "https://rs.iudx.org.in/ngsi-ld/v1",
 
     "headers": [
         {
             "Content-Type": "application/json",
-            "token": "authtest.iudx.io/vasanth.rajaraman@datakaveri.org/1c2057cf82333981ebb0c575f6e0be20"
+            "token": "authorization.iudx.org.in/paras.varshney@datakaveri.org/25f81a7b9ffb1ac0c44b5a147f637dbb"
         },
         {
             "Content-Type": "application/json",
-            "token": "authtest.iudx.io/vasanth.rajaraman@datakaveri.org/d63ed90b818c43d5774d127818fa73df"
+            "token": "authorization.iudx.org.in/paras.varshney@datakaveri.org/27919e400f9c3d7b27123cdbb5008a48"
         }
     ],
 
     "entities":[
-        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.org.in/pune-env-aqm/f36b4669-628b-ad93-9970-f9d424afbf75"
     ],
 
     "time_params": [
         {
-            "time": "2020-09-18T14:20:00Z",
-            "endtime": "2020-09-19T14:20:00Z"
+            "time": "2021-01-01T14:20:00Z",
+            "endtime": "2021-01-09T14:20:00Z"
+        },
+        {
+            "time": "2021-01-01T14:20:00Z",
+            "endtime": "2021-01-09T14:20:00Z"
+        }, 
+        {
+            "time": "2021-01-01T14:20:00Z",
+            "endtime": "2021-01-09T14:20:00Z"
         }
     ],
 

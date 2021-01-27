@@ -9,7 +9,7 @@ from typing import TypeVar, Dict
 HTTPResponse = TypeVar('T')
 
 
-class HTTPResponse(Response):
+class HTTPResponse():
     """Abstract class for Response. Helps to create a modular interface
        for the API Response in Python.
     """
@@ -17,7 +17,7 @@ class HTTPResponse(Response):
     def __init__(self: HTTPResponse):
         """HTTPResponse base class constructor
         """
-        self._response = Response.__init__(self)
+        self._response = None
         return
 
     def get_json(self) -> Dict:

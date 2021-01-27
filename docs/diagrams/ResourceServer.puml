@@ -9,7 +9,7 @@ class ResourceServer  {
   -- public methods --
   ResourceServer init(str rs_url, optional str token, option dict headers)
   bool status() // check status
-  ResourceResult get_data(ResourceQuery query) // 
+  List[ResourceResult] get_data(List[ResourceQuery] queries)
 }
 
 class HTTPEntity  {

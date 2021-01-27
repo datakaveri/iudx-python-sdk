@@ -13,6 +13,7 @@ from iudx.rs.ResourceResult import ResourceResult
 
 import pandas as pd
 from tqdm import tqdm
+from multiprocessing import Process, Pool
 
 Entity = TypeVar('T')
 str_or_float = TypeVar('str_or_float', str, float)
@@ -35,7 +36,7 @@ class Entity():
             headers={"content-type": "application/json"}
         )
         self.rs: ResourceServer = None
-        self.resources: List[Dict] = []
+        self.resources: List[str] = []
         self.entity_id = entity_id
 
         self._iudx_entity_type: str = None
@@ -69,31 +70,18 @@ class Entity():
                     value=param2["value"]
                 )
 
-        # update resources list with the search result dictionaries.
+        # update resources list with the resources retrieved
+        # from Catalogue query.
         cat_result = self.catalogue.search_entity(query)
-        self.resources = cat_result.documents
 
-        # this call does not require token.
+        for res in cat_result.documents:
+            self.resources.append(res["id"])
+
         self.rs: ResourceServer = ResourceServer(
             rs_url="https://rs.iudx.org.in/ngsi-ld/v1",
             headers={"content-type": "application/json"}
         )
         return
-
-    def set_rs(self, rs_url: str=None, token: str=None, 
-               headers: Dict=None) -> Entity:
-        """Pydoc heading.
-        Args:
-            argument (argument-type): argument-description
-        Returns:
-            returned-varaible (returned-varaible-type): return-variable-description
-        """
-        self.rs = ResourceServer(
-            rs_url=rs_url,
-            token=token,
-            headers=headers
-        )
-        return self
 
     def latest(self) -> pd.DataFrame:
         """Method to fetch resources for latest data
@@ -105,7 +93,7 @@ class Entity():
         resources_df = pd.DataFrame()
         for resource in self.resources:
             resource_query = ResourceQuery()
-            query = resource_query.add_entity(resource["id"])
+            query = resource_query.add_entity(resource)
 
             rs_result: ResourceResult = self.rs.get_latest(query)
 
@@ -127,18 +115,21 @@ class Entity():
             resources_df (pd.DataFrame): Pandas DataFrame with temporal data.
         """
         resources_df = pd.DataFrame()
+
+        queries = []
         for resource in tqdm(self.resources):
             resource_query = ResourceQuery()
-            resource_query.add_entity(resource["id"])
+            resource_query.add_entity(resource)
 
             query = resource_query.during_search(
                 start_time=start_time,
                 end_time=end_time
             )
+            queries.append(query)
+        rs_results: List[ResourceResult] = self.rs.get_data(queries)
 
+        for rs_result in tqdm(rs_results):
             try:
-                rs_result: ResourceResult = self.rs.get_data(query)
-
                 if rs_result.type == 200:
                     resource_df = pd.DataFrame(rs_result.results)
 
@@ -146,8 +137,8 @@ class Entity():
                         resources_df = resource_df
                     else:
                         resources_df = pd.concat([resources_df, resource_df])
-            except:
-                print("No Resource data available.")
+            except Exception as e:
+                print(f"No Resource Data: {e}")
         return resources_df
 
     def property_search(self, key: str=None, value: str_or_float=None, 
@@ -165,9 +156,11 @@ class Entity():
             resources_df (pd.DataFrame): Pandas DataFrame with property data.
         """
         resources_df = pd.DataFrame()
-        for resource in self.resources:
+
+        queries = []
+        for resource in tqdm(self.resources):
             resource_query = ResourceQuery()
-            resource_query.add_entity(resource["id"])
+            resource_query.add_entity(resource)
 
             # TODO: temporal(during) query is required for property search.
             query = resource_query.property_search(
@@ -175,10 +168,11 @@ class Entity():
                 value=value,
                 operation=operation
             )
+            queries.append(query)
+        rs_results: List[ResourceResult] = self.rs.get_data(queries)
 
+        for rs_result in tqdm(rs_results):
             try:
-                rs_result: ResourceResult = self.rs.get_data(query)
-
                 if rs_result.type == 200:
                     resource_df = pd.DataFrame(rs_result.results)
 
@@ -186,8 +180,8 @@ class Entity():
                         resources_df = resource_df
                     else:
                         resources_df = pd.concat([resources_df, resource_df])
-            except:
-                print("No Resource data available.")
+            except Exception as e:
+                print(f"No Resource Data: {e}")
         return resources_df
 
     def geo_search(self, geoproperty: str=None, geometry: str=None,
@@ -207,9 +201,11 @@ class Entity():
             resources_df (pd.DataFrame): Pandas DataFrame with geo data.
         """
         resources_df = pd.DataFrame()
-        for resource in self.resources:
+
+        queries = []
+        for resource in tqdm(self.resources):
             resource_query = ResourceQuery()
-            resource_query.add_entity(resource["id"])
+            resource_query.add_entity(resource)
 
             # TODO: temporal(during) query is required for geo search.
             query = resource_query.geo_search(
@@ -219,10 +215,11 @@ class Entity():
                 max_distance=_max_distance,
                 coordinates=coordinates
             )
+            queries.append(query)
+        rs_results: List[ResourceResult] = self.rs.get_data(queries)
 
+        for rs_result in tqdm(rs_results):
             try:
-                rs_result: ResourceResult = self.rs.get_data(query)
-
                 if rs_result.type == 200:
                     resource_df = pd.DataFrame(rs_result.results)
 
@@ -230,6 +227,6 @@ class Entity():
                         resources_df = resource_df
                     else:
                         resources_df = pd.concat([resources_df, resource_df])
-            except:
-                print("No Resource data available.")
+            except Exception as e:
+                print(f"No Resource Data: {e}")
         return resources_df
