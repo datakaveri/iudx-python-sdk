@@ -11,6 +11,8 @@ from iudx.common.HTTPResponse import HTTPResponse
 from iudx.rs.ResourceQuery import ResourceQuery
 from iudx.rs.ResourceResult import ResourceResult
 import json
+import multiprocessing
+from multiprocessing import Process, Pool
 
 
 class ResourceServer():
@@ -40,33 +42,41 @@ class ResourceServer():
         """
         return self
 
-    def get_data(self, query: ResourceQuery) -> ResourceResult:
+    def get_data(self, queries: List[ResourceQuery]) -> List[ResourceResult]:
         """Method to post the request for geo, temporal, property, add filters
             and make complex query.
 
         Args:
-            query (ResourceQuery): A query object of ResourceQuery class.
+            queries (List[ResourceQuery]): A list of query objects of 
+            ResourceQuery class.
         Returns:
-            rs_result (ResourceResult): returns a ResourceResult object.
+            rs_results (List[ResourceResult]): returns a list of 
+                ResourceResult object.
         """
         url = self.url + "/entityOperations/query"
-        http_entity = HTTPEntity()
-        response: HTTPResponse = http_entity.post(
-            url,
-            query.get_query(),
-            self.headers
-            )
-        result_data = response.get_json()
+        pool = Pool(processes=multiprocessing.cpu_count())
 
-        rs_result = ResourceResult()
-        if response.get_status_code() == 200:
-            rs_result.type = result_data["type"]
-            rs_result.title = result_data["title"]
-            rs_result.results = result_data["results"]
-        else:
-            rs_result.type = result_data["type"]
-            rs_result.title = result_data["title"]
-        return rs_result
+        zipped_url = []
+        for query in queries:
+            zipped_url.append((url, query.get_query(), self.headers))
+
+        responses: List[HTTPResponse] = pool.starmap(
+            HTTPEntity().post,
+            zipped_url
+            )
+
+        rs_results = []
+        for response in responses:
+            rs_result = ResourceResult()
+
+            if response.get_status_code() == 200:
+                result_data = response.get_json()
+                rs_result.type = result_data["type"]
+                rs_result.title = result_data["title"]
+                rs_result.results = result_data["results"]
+                rs_results.append(rs_result)
+
+        return rs_results
 
     def get_latest(self, query: ResourceQuery) -> ResourceResult:
         """Method to get the request for latest resource data.

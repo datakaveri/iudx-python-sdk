@@ -35,7 +35,6 @@ class Entity {
     list<dict> _quantitative_properties
     list<dict> _properties
     -- public methods --
-    Entity set_rs(str rs_url, optional str token, option dict headers)
     pandas.DataFrame latest()
     pandas.DataFrame during_search(str start_time, str end_time)
     pandas.DataFrame property_search(str key, str/float value, str operation)

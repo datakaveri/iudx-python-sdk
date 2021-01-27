@@ -44,6 +44,7 @@ class EntityTest(unittest.TestCase):
             end="\n-----------\n"
             )
         print(f"Columns in DataFrame:\n{df.columns}", end="\n-----------\n")
+        print(df.head)
         print("*"*60)
 
 
