@@ -12,7 +12,7 @@ from iudx.rs.ResourceQuery import ResourceQuery
 from iudx.rs.ResourceResult import ResourceResult
 
 import pandas as pd
-from tqdm import tqdm
+import json
 from multiprocessing import Process, Pool
 
 Entity = TypeVar('T')
@@ -31,9 +31,13 @@ class Entity():
         Args:
             entity_id (String): Id of the entity to be queried.
         """
+        self.config = {}
+        with open("./config.json", "r") as f:
+            self.config = json.load(f)
+
         self.catalogue: Catalogue = Catalogue(
-            cat_url="https://api.catalogue.iudx.org.in/iudx/cat/v1",
-            headers={"content-type": "application/json"}
+            cat_url=self.config["urls"]["cat_url"],
+            headers=self.config["headers"]
         )
         self.rs: ResourceServer = None
         self.resources: List[str] = []
@@ -78,8 +82,8 @@ class Entity():
             self.resources.append(res["id"])
 
         self.rs: ResourceServer = ResourceServer(
-            rs_url="https://rs.iudx.org.in/ngsi-ld/v1",
-            headers={"content-type": "application/json"}
+            rs_url=self.config["urls"]["rs_url"],
+            headers=self.config["headers"]
         )
         return
 
@@ -117,7 +121,7 @@ class Entity():
         resources_df = pd.DataFrame()
 
         queries = []
-        for resource in tqdm(self.resources):
+        for resource in self.resources:
             resource_query = ResourceQuery()
             resource_query.add_entity(resource)
 
@@ -128,7 +132,7 @@ class Entity():
             queries.append(query)
         rs_results: List[ResourceResult] = self.rs.get_data(queries)
 
-        for rs_result in tqdm(rs_results):
+        for rs_result in rs_results:
             try:
                 if rs_result.type == 200:
                     resource_df = pd.DataFrame(rs_result.results)
@@ -158,7 +162,7 @@ class Entity():
         resources_df = pd.DataFrame()
 
         queries = []
-        for resource in tqdm(self.resources):
+        for resource in self.resources:
             resource_query = ResourceQuery()
             resource_query.add_entity(resource)
 
@@ -171,7 +175,7 @@ class Entity():
             queries.append(query)
         rs_results: List[ResourceResult] = self.rs.get_data(queries)
 
-        for rs_result in tqdm(rs_results):
+        for rs_result in rs_results:
             try:
                 if rs_result.type == 200:
                     resource_df = pd.DataFrame(rs_result.results)
@@ -203,7 +207,7 @@ class Entity():
         resources_df = pd.DataFrame()
 
         queries = []
-        for resource in tqdm(self.resources):
+        for resource in self.resources:
             resource_query = ResourceQuery()
             resource_query.add_entity(resource)
 
@@ -218,7 +222,7 @@ class Entity():
             queries.append(query)
         rs_results: List[ResourceResult] = self.rs.get_data(queries)
 
-        for rs_result in tqdm(rs_results):
+        for rs_result in rs_results:
             try:
                 if rs_result.type == 200:
                     resource_df = pd.DataFrame(rs_result.results)

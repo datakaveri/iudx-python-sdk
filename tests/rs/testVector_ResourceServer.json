@@ -1,17 +1,4 @@
 {
-    "url": "https://rs.iudx.org.in/ngsi-ld/v1",
-
-    "headers": [
-        {
-            "Content-Type": "application/json",
-            "token": "authorization.iudx.org.in/paras.varshney@datakaveri.org/25f81a7b9ffb1ac0c44b5a147f637dbb"
-        },
-        {
-            "Content-Type": "application/json",
-            "token": "authorization.iudx.org.in/paras.varshney@datakaveri.org/27919e400f9c3d7b27123cdbb5008a48"
-        }
-    ],
-
     "entities":[
         "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.org.in/pune-env-aqm/f36b4669-628b-ad93-9970-f9d424afbf75"
     ],
@@ -23,7 +10,7 @@
         },
         {
             "time": "2021-01-01T14:20:00Z",
-            "endtime": "2021-01-09T14:20:00Z"
+            "endtime": "2021-01-09T14:2,:00Z"
         }, 
         {
             "time": "2021-01-01T14:20:00Z",
