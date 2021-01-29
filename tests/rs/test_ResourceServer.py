@@ -21,13 +21,17 @@ class ResourceServerTest(unittest.TestCase):
         """
         super(ResourceServerTest, self).__init__(*args, **kwargs)
 
+        self.config = {}
+        with open("./config.json", "r") as f:
+            self.config = json.load(f)
+
         self.testVector = {}
         with open("./tests/rs/testVector_ResourceServer.json", "r") as f:
             self.testVector = json.load(f)
 
         self.rs = ResourceServer(
-            rs_url=self.testVector["url"],
-            headers=self.testVector["headers"][0]
+            rs_url=self.config["urls"]["rs_url"],
+            headers=self.config["headers"],
             )
         self.rs_query = ResourceQuery()
 
