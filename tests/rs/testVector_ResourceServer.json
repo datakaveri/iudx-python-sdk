@@ -1,0 +1,30 @@
+{
+    "entities":[
+        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.org.in/pune-env-aqm/f36b4669-628b-ad93-9970-f9d424afbf75"
+    ],
+
+    "time_params": [
+        {
+            "time": "2021-01-01T14:20:00Z",
+            "endtime": "2021-01-09T14:20:00Z"
+        },
+        {
+            "time": "2021-01-01T14:20:00Z",
+            "endtime": "2021-01-09T14:2,:00Z"
+        }, 
+        {
+            "time": "2021-01-01T14:20:00Z",
+            "endtime": "2021-01-09T14:20:00Z"
+        }
+    ],
+
+    "geo_params": [
+        {
+            "geometry": "Point",
+            "coordinates": [21.178,72.834],
+            "georel": "near",
+            "maxDistance": 10,
+            "geoproperty": "location"
+        }
+    ]
+}
