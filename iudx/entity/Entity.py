@@ -12,8 +12,6 @@ from iudx.rs.ResourceQuery import ResourceQuery
 from iudx.rs.ResourceResult import ResourceResult
 
 import pandas as pd
-import json
-from multiprocessing import Process, Pool
 
 Entity = TypeVar('T')
 str_or_float = TypeVar('str_or_float', str, float)
@@ -23,21 +21,25 @@ class Entity():
     """Abstract class for Entity. Helps to create a modular interface
        for each inidividual Entity.
     """
-
-    def __init__(self: Entity, entity_id: str=None):
+    # TODO: need to check for better ways to load urls.
+    def __init__(
+        self: Entity,
+        entity_id: str=None,
+        cat_url: str="https://api.catalogue.iudx.org.in/iudx/cat/v1",
+        rs_url: str="https://rs.iudx.org.in/ngsi-ld/v1",
+        headers: Dict={"content-type": "application/json"},
+        token: str=None
+    ):
         """Entity base class constructor for getting the resources from
                 catalogue server.
 
         Args:
             entity_id (String): Id of the entity to be queried.
         """
-        self.config = {}
-        with open("./config.json", "r") as f:
-            self.config = json.load(f)
-
         self.catalogue: Catalogue = Catalogue(
-            cat_url=self.config["urls"]["cat_url"],
-            headers=self.config["headers"]
+            cat_url=cat_url,
+            headers=headers,
+            token=token
         )
         self.rs: ResourceServer = None
         self.resources: List[str] = []
@@ -55,35 +57,41 @@ class Entity():
         # Query the Catalogue module and fetch the item based on entity_id
         # and set the data descriptors
         documents_result = self.catalogue.get_item(self.entity_id)
-        self._data_descriptor = documents_result.documents[0]["dataDescriptor"]
 
-        # Parse the data schema from the data descriptor
-        for key in self._data_descriptor.keys():
-            pass
+        if "iudx:ResourceGroup" in documents_result.documents[0]["type"]:
+            self._data_descriptor = documents_result.documents[0]["dataDescriptor"]
 
-        # Fetch all Resources for the entity from Catalogue.
-        cat_query = CatalogueQuery()
-        param1 = {"key": "resourceGroup", "value": [self.entity_id]}
-        param2 = {"key": "type", "value": ["iudx:Resource"]}
+            # TODO: Parse the data schema from the data descriptor
+            for key in self._data_descriptor.keys():
+                pass
 
-        query = cat_query.property_search(
-                    key=param1["key"],
-                    value=param1["value"]
-                ).property_search(
-                    key=param2["key"],
-                    value=param2["value"]
-                )
+            # Fetch all Resources for the entity from Catalogue.
+            cat_query = CatalogueQuery()
+            param1 = {"key": "resourceGroup", "value": [self.entity_id]}
+            param2 = {"key": "type", "value": ["iudx:Resource"]}
 
-        # update resources list with the resources retrieved
-        # from Catalogue query.
-        cat_result = self.catalogue.search_entity(query)
+            query = cat_query.property_search(
+                        key=param1["key"],
+                        value=param1["value"]
+                    ).property_search(
+                        key=param2["key"],
+                        value=param2["value"]
+                    )
 
-        for res in cat_result.documents:
-            self.resources.append(res["id"])
+            # update resources list with the resources retrieved
+            # from Catalogue query.
+            cat_result = self.catalogue.search_entity(query)
+
+            for res in cat_result.documents:
+                self.resources.append(res["id"])
+
+        elif "iudx:Resource" in documents_result.documents[0]["type"]:
+            self.resources = [self.entity_id]
 
         self.rs: ResourceServer = ResourceServer(
-            rs_url=self.config["urls"]["rs_url"],
-            headers=self.config["headers"]
+            rs_url=rs_url,
+            headers=headers,
+            token=token
         )
         return
 
@@ -135,7 +143,7 @@ class Entity():
         for rs_result in rs_results:
             try:
                 if rs_result.type == 200:
-                    resource_df = pd.DataFrame(rs_result.results)
+                    resource_df = pd.json_normalize(rs_result.results)
 
                     if len(resources_df) == 0:
                         resources_df = resource_df
