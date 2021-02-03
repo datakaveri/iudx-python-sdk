@@ -27,6 +27,30 @@ class EntityTest(unittest.TestCase):
         with open("./tests/entity/testVector_Entity.json", "r") as f:
             self.testVector = json.load(f)
 
+    def test_latest(self):
+        """Function to test the latest search query.
+        """
+
+        for e in self.testVector["entity_ids"]:
+            self.entity = Entity(e)
+
+            for time_param in self.testVector["temporal_params"]:
+                df = self.entity.latest()
+
+                self.assertNotEqual(df.shape[0], 0)
+                self.assertGreaterEqual(df.shape[0], 1)
+                self.assertIsNotNone(df)
+                self.assertIsInstance(df, pd.DataFrame)
+
+            print("*"*60 + "\n" + "*"*60)
+            print(
+                f"DataFrame has {df.shape[0]} rows and {df.shape[1]} columns.",
+                end="\n-----------\n"
+                )
+            print(f"Columns in DataFrame:\n{df.columns}", end="\n-----------\n")
+            print(df.head)
+            print("*"*60)
+
     def test_during_search(self):
         """Function to test the temporal during search query.
         """

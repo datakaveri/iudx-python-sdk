@@ -42,20 +42,25 @@ class ResourceServerTest(unittest.TestCase):
     def test_get_latest(self):
         """Function to test the get latest resource API.
         """
-        query = self.rs_entity
-        result = self.rs.get_latest(query)
+        querries = []
+        for i in range(3):
+            query = self.rs_entity
+            querries.append(query)
 
-        print(f"RESULTS: {result.results}")
-        print(f"TYPE: {result.type}")
-        print(f"TITLE: {result.title}")
-        print("*"*30)
+        results: List[ResourceResult] = self.rs.get_latest(querries)
 
-        self.assertEqual(result.type, 200)
-        self.assertNotEqual(result.type, 400)
-        self.assertNotEqual(result.type, 401)
-        self.assertNotEqual(result.type, 404)
-        self.assertNotEqual(result.type, 415)
-        self.assertNotEqual(result.type, 500)
+        for result in results:
+            print(f"RESULTS: {result.results}")
+            print(f"TYPE: {result.type}")
+            print(f"TITLE: {result.title}")
+            print("*"*30)
+
+            self.assertEqual(result.type, 200)
+            self.assertNotEqual(result.type, 400)
+            self.assertNotEqual(result.type, 401)
+            self.assertNotEqual(result.type, 404)
+            self.assertNotEqual(result.type, 415)
+            self.assertNotEqual(result.type, 500)
 
     def test_get_data(self):
         """Function to test the post complex query response API.

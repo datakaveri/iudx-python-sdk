@@ -42,7 +42,7 @@ class Entity():
             token=token
         )
         self.rs: ResourceServer = None
-        self.resources: List[str] = []
+        self.resources: List[Dict] = []
         self.entity_id = entity_id
 
         self._iudx_entity_type: str = None
@@ -82,11 +82,12 @@ class Entity():
             # from Catalogue query.
             cat_result = self.catalogue.search_entity(query)
 
-            for res in cat_result.documents:
-                self.resources.append(res["id"])
+            self.resources = cat_result.documents
+            # for res in cat_result.documents:
+            #     self.resources.append(res["id"])
 
         elif "iudx:Resource" in documents_result.documents[0]["type"]:
-            self.resources = [self.entity_id]
+            self.resources = [{"id": self.entity_id}]
 
         self.rs: ResourceServer = ResourceServer(
             rs_url=rs_url,
@@ -103,15 +104,40 @@ class Entity():
             resources_df (pd.DataFrame): Pandas DataFrame with latest data.
         """
         resources_df = pd.DataFrame()
+
+        queries = []
         for resource in self.resources:
             resource_query = ResourceQuery()
-            query = resource_query.add_entity(resource)
+            query = resource_query.add_entity(resource["id"])
+            queries.append(query)
 
-            rs_result: ResourceResult = self.rs.get_latest(query)
+        rs_results: List[ResourceResult] = self.rs.get_latest(queries)
 
-            if rs_result.type == 200:
-                resource_df = pd.DataFrame(rs_result.results)
-                resources_df.append(resource_df)
+        for rs_result in rs_results:
+            try:
+                if rs_result.type == 200:
+                    resource_df = pd.json_normalize(rs_result.results)
+
+                    if len(resources_df) == 0:
+                        resources_df = resource_df
+                    else:
+                        resources_df = pd.concat([resources_df, resource_df])
+            except Exception as e:
+                print(f"No Latest Data: {e}")
+
+        # Processing data as a time series dataframe:
+        # 1) converting time feature to datetime.
+        # 2) sorting values based on time.
+        # 3) resetting the indices for the dataframe.
+        try:
+            resources_df["observationDateTime"] = pd.to_datetime(
+                resources_df["observationDateTime"]
+                )
+            resources_df = resources_df.sort_values(by="observationDateTime")
+        except Exception as e:
+            print(f"Data is not Time Series {e}")
+
+        resources_df = resources_df.reset_index(drop=True)
         return resources_df
 
     def during_search(self, start_time: str=None,
@@ -131,7 +157,7 @@ class Entity():
         queries = []
         for resource in self.resources:
             resource_query = ResourceQuery()
-            resource_query.add_entity(resource)
+            resource_query.add_entity(resource["id"])
 
             query = resource_query.during_search(
                 start_time=start_time,
@@ -149,8 +175,24 @@ class Entity():
                         resources_df = resource_df
                     else:
                         resources_df = pd.concat([resources_df, resource_df])
+                elif rs_result.type == 401:
+                    raise RuntimeError("Not Authorized: Invalid credentials")
             except Exception as e:
                 print(f"No Resource Data: {e}")
+
+        # Processing data as a time series dataframe:
+        # 1) converting time feature to datetime.
+        # 2) sorting values based on time.
+        # 3) resetting the indices for the dataframe.
+        try:
+            resources_df["observationDateTime"] = pd.to_datetime(
+                resources_df["observationDateTime"]
+                )
+            resources_df = resources_df.sort_values(by="observationDateTime")
+        except Exception as e:
+            print(f"Data is not Time Series {e}")
+
+        resources_df = resources_df.reset_index(drop=True)
         return resources_df
 
     def property_search(self, key: str=None, value: str_or_float=None, 
@@ -172,7 +214,7 @@ class Entity():
         queries = []
         for resource in self.resources:
             resource_query = ResourceQuery()
-            resource_query.add_entity(resource)
+            resource_query.add_entity(resource["id"])
 
             # TODO: temporal(during) query is required for property search.
             query = resource_query.property_search(
@@ -186,14 +228,30 @@ class Entity():
         for rs_result in rs_results:
             try:
                 if rs_result.type == 200:
-                    resource_df = pd.DataFrame(rs_result.results)
+                    resource_df = pd.json_normalize(rs_result.results)
 
                     if len(resources_df) == 0:
                         resources_df = resource_df
                     else:
                         resources_df = pd.concat([resources_df, resource_df])
+                elif rs_result.type == 401:
+                    raise RuntimeError("Not Authorized: Invalid credentials")
             except Exception as e:
                 print(f"No Resource Data: {e}")
+
+        # Processing data as a time series dataframe:
+        # 1) converting time feature to datetime.
+        # 2) sorting values based on time.
+        # 3) resetting the indices for the dataframe.
+        try:
+            resources_df["observationDateTime"] = pd.to_datetime(
+                resources_df["observationDateTime"]
+                )
+            resources_df = resources_df.sort_values(by="observationDateTime")
+        except Exception as e:
+            print(f"Data is not Time Series {e}")
+
+        resources_df = resources_df.reset_index(drop=True)
         return resources_df
 
     def geo_search(self, geoproperty: str=None, geometry: str=None,
@@ -217,7 +275,7 @@ class Entity():
         queries = []
         for resource in self.resources:
             resource_query = ResourceQuery()
-            resource_query.add_entity(resource)
+            resource_query.add_entity(resource["id"])
 
             # TODO: temporal(during) query is required for geo search.
             query = resource_query.geo_search(
@@ -233,12 +291,28 @@ class Entity():
         for rs_result in rs_results:
             try:
                 if rs_result.type == 200:
-                    resource_df = pd.DataFrame(rs_result.results)
+                    resource_df = pd.json_normalize(rs_result.results)
 
                     if len(resources_df) == 0:
                         resources_df = resource_df
                     else:
                         resources_df = pd.concat([resources_df, resource_df])
+                elif rs_result.type == 401:
+                    raise RuntimeError("Not Authorized: Invalid credentials")
             except Exception as e:
                 print(f"No Resource Data: {e}")
+
+        # Processing data as a time series dataframe:
+        # 1) converting time feature to datetime.
+        # 2) sorting values based on time.
+        # 3) resetting the indices for the dataframe.
+        try:
+            resources_df["observationDateTime"] = pd.to_datetime(
+                resources_df["observationDateTime"]
+                )
+            resources_df = resources_df.sort_values(by="observationDateTime")
+        except Exception as e:
+            print(f"Data is not Time Series {e}")
+
+        resources_df = resources_df.reset_index(drop=True)
         return resources_df

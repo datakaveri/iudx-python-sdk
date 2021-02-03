@@ -10,9 +10,8 @@ from iudx.common.HTTPResponse import HTTPResponse
 
 from iudx.rs.ResourceQuery import ResourceQuery
 from iudx.rs.ResourceResult import ResourceResult
-import json
+
 import multiprocessing
-from multiprocessing import Process, Pool
 
 
 class ResourceServer():
@@ -27,6 +26,7 @@ class ResourceServer():
         self.url: str = rs_url
         self.token: str = token
         self.headers: Dict[str, str] = headers
+        self.pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
 
         if self.token is not None:
             self.headers["token"] = self.token
@@ -54,13 +54,12 @@ class ResourceServer():
                 ResourceResult object.
         """
         url = self.url + "/entityOperations/query"
-        pool = Pool(processes=multiprocessing.cpu_count())
 
         zipped_url = []
         for query in queries:
             zipped_url.append((url, query.get_query(), self.headers))
 
-        responses: List[HTTPResponse] = pool.starmap(
+        responses: List[HTTPResponse] = self.pool.starmap(
             HTTPEntity().post,
             zipped_url
             )
@@ -81,7 +80,7 @@ class ResourceServer():
 
         return rs_results
 
-    def get_latest(self, query: ResourceQuery) -> ResourceResult:
+    def get_latest(self, queries: List[ResourceQuery]) -> List[ResourceResult]:
         """Method to get the request for latest resource data.
 
         Args:
@@ -89,21 +88,30 @@ class ResourceServer():
         Returns:
             rs_result (ResourceResult): returns a ResourceResult object.
         """
-        url = self.url + "/entities"
-        url = url + query.latest_search()
-        http_entity = HTTPEntity()
-        response: HTTPResponse = http_entity.get(
-            url,
-            self.headers
-            )
-        result_data = response.get_json()
+        base_url = self.url + "/entities"
 
-        rs_result = ResourceResult()
-        if response.get_status_code() == 200:
-            rs_result.type = result_data["type"]
-            rs_result.title = result_data["title"]
-            rs_result.results = result_data["results"]
-        else:
-            rs_result.type = result_data["type"]
-            rs_result.title = result_data["title"]
-        return rs_result
+        zipped_url = []
+        for query in queries:
+            url = base_url + query.latest_search()
+            zipped_url.append((url, self.headers))
+
+        responses: List[HTTPResponse] = self.pool.starmap(
+            HTTPEntity().get,
+            zipped_url
+            )
+
+        rs_results = []
+        for response in responses:
+            rs_result = ResourceResult()
+
+            if response.get_status_code() == 401:
+                raise RuntimeError("Not Authorized: Invalid Credentials")
+
+            elif response.get_status_code() == 200:
+                result_data = response.get_json()
+                rs_result.type = result_data["type"]
+                rs_result.title = result_data["title"]
+                rs_result.results = result_data["results"]
+                rs_results.append(rs_result)
+
+        return rs_results
