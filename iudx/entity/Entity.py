@@ -12,6 +12,7 @@ from iudx.rs.ResourceQuery import ResourceQuery
 from iudx.rs.ResourceResult import ResourceResult
 
 import pandas as pd
+from datetime import date, datetime, timedelta
 
 Entity = TypeVar('T')
 str_or_float = TypeVar('str_or_float', str, float)
@@ -53,6 +54,13 @@ class Entity():
         self._time_properties: List[Dict] = None
         self._quantitative_properties: List[Dict] = None
         self._properties: List[Dict] = None
+
+        self.resources_df = None
+        self.start_time = None
+        self.end_time = None
+        self.time_format = "%Y-%m-%dT%H:%M:%SZ"
+        self.slot_hours = 24
+        self.max_query_days = 61
 
         # Query the Catalogue module and fetch the item based on entity_id
         # and set the data descriptors
@@ -130,12 +138,15 @@ class Entity():
         # 2) sorting values based on time.
         # 3) resetting the indices for the dataframe.
         try:
-            resources_df["observationDateTime"] = pd.to_datetime(
-                resources_df["observationDateTime"]
-                )
-            resources_df = resources_df.sort_values(by="observationDateTime")
+            if len(resources_df) != 0:
+                resources_df["observationDateTime"] = pd.to_datetime(
+                    resources_df["observationDateTime"]
+                    )
+                resources_df = resources_df.sort_values(by="observationDateTime")
+            else:
+                print("No Data available during the timeframe.")
         except Exception as e:
-            print(f"Data is not Time Series {e}")
+            print(f"Data format issue: {e}")
 
         resources_df = resources_df.reset_index(drop=True)
         return resources_df
@@ -152,18 +163,48 @@ class Entity():
         Returns:
             resources_df (pd.DataFrame): Pandas DataFrame with temporal data.
         """
-        resources_df = pd.DataFrame()
+        self.start_time = start_time
+        self.end_time = end_time
 
+        days = []
+        start_date = datetime.strptime(self.start_time, self.time_format)
+        end_date = datetime.strptime(self.end_time, self.time_format)
+
+        if end_date <= start_date:
+            raise RuntimeError("'end_time' should be greater than 'start_time'")
+
+        try:
+            if (end_date-start_date).days > self.max_query_days:
+                raise RuntimeError("Can't query more than 2 months of data at once.")
+        except:
+            pass
+
+        date = start_date
+        while date <= end_date:
+            days.append(date.strftime(self.time_format))
+            date += timedelta(hours=self.slot_hours)
+            
+        if (date-end_date).seconds > 0:
+            days.append(end_date.strftime(self.time_format))
+        
+        resources_df = pd.DataFrame()
         queries = []
         for resource in self.resources:
-            resource_query = ResourceQuery()
-            resource_query.add_entity(resource["id"])
+            for i in range(len(days)):
+                resource_query = ResourceQuery()
+                resource_query.add_entity(resource["id"])
 
-            query = resource_query.during_search(
-                start_time=start_time,
-                end_time=end_time
-            )
-            queries.append(query)
+                try:
+                    start = days[i]
+                    end = days[i+1]
+                    query = resource_query.during_search(
+                        start_time=start,
+                        end_time=end
+                    )
+                    queries.append(query)
+                except:
+                    pass
+
         rs_results: List[ResourceResult] = self.rs.get_data(queries)
 
         for rs_result in rs_results:
@@ -185,14 +226,18 @@ class Entity():
         # 2) sorting values based on time.
         # 3) resetting the indices for the dataframe.
         try:
-            resources_df["observationDateTime"] = pd.to_datetime(
-                resources_df["observationDateTime"]
-                )
-            resources_df = resources_df.sort_values(by="observationDateTime")
+            if len(resources_df) != 0:
+                resources_df["observationDateTime"] = pd.to_datetime(
+                    resources_df["observationDateTime"]
+                    )
+                resources_df = resources_df.sort_values(by="observationDateTime")
+            else:
+                print("No Data available during the timeframe.")
         except Exception as e:
-            print(f"Data is not Time Series {e}")
+            print(f"Data format issue: {e}")
 
         resources_df = resources_df.reset_index(drop=True)
+        self.resources_df = resources_df
         return resources_df
 
     def property_search(self, key: str=None, value: str_or_float=None, 
@@ -244,14 +289,18 @@ class Entity():
         # 2) sorting values based on time.
         # 3) resetting the indices for the dataframe.
         try:
-            resources_df["observationDateTime"] = pd.to_datetime(
-                resources_df["observationDateTime"]
-                )
-            resources_df = resources_df.sort_values(by="observationDateTime")
+            if len(resources_df) != 0:
+                resources_df["observationDateTime"] = pd.to_datetime(
+                    resources_df["observationDateTime"]
+                    )
+                resources_df = resources_df.sort_values(by="observationDateTime")
+            else:
+                print("No Data available during the timeframe.")
         except Exception as e:
-            print(f"Data is not Time Series {e}")
+            print(f"Data format issue: {e}")
 
         resources_df = resources_df.reset_index(drop=True)
+        self.resources_df = resources_df
         return resources_df
 
     def geo_search(self, geoproperty: str=None, geometry: str=None,
@@ -307,12 +356,38 @@ class Entity():
         # 2) sorting values based on time.
         # 3) resetting the indices for the dataframe.
         try:
-            resources_df["observationDateTime"] = pd.to_datetime(
-                resources_df["observationDateTime"]
-                )
-            resources_df = resources_df.sort_values(by="observationDateTime")
+            if len(resources_df) != 0:
+                resources_df["observationDateTime"] = pd.to_datetime(
+                    resources_df["observationDateTime"]
+                    )
+                resources_df = resources_df.sort_values(by="observationDateTime")
+            else:
+                print("No Data available during the timeframe.")
         except Exception as e:
-            print(f"Data is not Time Series {e}")
+            print(f"Data format issue: {e}")
 
         resources_df = resources_df.reset_index(drop=True)
+        self.resources_df = resources_df
         return resources_df
+
+    def download(self, file_name=None):
+        if file_name is not None:
+            file_name = file_name.split(".")[0]
+        else:
+            file_name = f"{self.entity_id.split('/')[-1]}_{self.start_time}_{self.end_time}"
+            
+        compression_opts = dict(
+            method='zip', 
+            archive_name=f"{file_name}.csv"
+        )
+
+        if self.resources_df is not None:
+            self.resources_df.to_csv(
+                f"{file_name}.zip", 
+                index=False, 
+                compression=compression_opts
+            )
+            print(f"File downloaded successfully: '{file_name}.zip'")
+        else:
+            raise RuntimeError("Temporal query is required to download data.")
+        return 

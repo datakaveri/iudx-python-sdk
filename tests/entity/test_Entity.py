@@ -9,6 +9,8 @@ sys.path.insert(1, './')
 from iudx.entity.Entity import Entity
 
 import pandas as pd
+import zipfile
+import os
 
 
 class EntityTest(unittest.TestCase):
@@ -77,6 +79,35 @@ class EntityTest(unittest.TestCase):
             print(f"Columns in DataFrame:\n{df.columns}", end="\n-----------\n")
             print(df.head)
             print("*"*60)
+
+    def test_download(self):
+        """Function to test the downloading of file in csv format.
+        """
+        file_name = "test_download_file"
+
+        for e in self.testVector["entity_ids"]:
+            self.entity = Entity(e, token=self.config["headers"]["token"])
+
+            for time_param in self.testVector["temporal_params"]:
+                df = self.entity.during_search(
+                    start_time=time_param["start_time"],
+                    end_time=time_param["end_time"]
+                )
+
+                self.assertNotEqual(df.shape[0], 0)
+                self.assertGreaterEqual(df.shape[0], 1)
+                self.assertIsNotNone(df)
+                self.assertIsInstance(df, pd.DataFrame)
+            
+            self.entity.download(file_name)
+
+            zf = zipfile.ZipFile(f"{file_name}.zip")
+            df = pd.read_csv(zf.open(f"{file_name}.csv"))
+
+            self.assertIsNotNone(df)
+            self.assertIsInstance(df, pd.DataFrame)
+
+            os.remove(f"{file_name}.zip")
 
 
 if __name__ == '__main__':
