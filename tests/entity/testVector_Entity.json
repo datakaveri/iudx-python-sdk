@@ -9,5 +9,10 @@
             "start_time": "2021-01-01T14:20:00Z",
             "end_time": "2021-01-07T14:20:00Z"
         }
+    ],
+
+    "file_types": [
+        "csv",
+        "json"
     ]
 }
