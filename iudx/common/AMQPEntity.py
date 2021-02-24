@@ -37,14 +37,13 @@ class AMQPEntity():
         """Method to subscribe to a stream of data.
 
         Args:
-            config (method): Contains all the credential and topic information .
-            Callback (method): Callback function for PIKA subscription.
+            queue_name(String): Queue name for AMQP Streaming
         Returns:
             response (AMQPResponse): AMQP Response after the subscription.
         """
 
         def callback(self, ch, method, properties, body) -> AMQPResponse:
-            """Method to subscribe to a stream of data.
+            """Callback function for the PIKA streaming.
 
             Args:
             
@@ -54,7 +53,15 @@ class AMQPEntity():
             response = AMQPResponse()
             AMQPResponse()._response = body
             return response
+        def set_callback(self,callback) -> AMQPResponse:
+            """Method to subscribe to a stream of data.
 
+            Args:
+            
+            Returns:
+                response (AMQPResponse): AMQP Response after the subscription.
+            """
+            self.Callback = callback(body)
         username = urllib.parse.quote_plus(self.sub_username)        
         connection = pika.BlockingConnection(pika.URLParameters(f"amqps://{username}:{self.password}@{self.host}:{str(self.port)}/{self.vhost}"))
         channel = connection.channel()

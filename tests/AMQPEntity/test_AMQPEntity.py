@@ -5,10 +5,11 @@ import pytest
 import unittest
 import json
 import sys
+import time
 sys.path.insert(1, './')
 
 from iudx.common.AMQPEntity import AMQPEntity
-from iudx.common.AMQPResponse import AMQPResponse
+# from iudx.common.AMQPResponse import AMQPResponse
 
 
 class AMQPEntityTest(unittest.TestCase):
@@ -30,15 +31,11 @@ class AMQPEntityTest(unittest.TestCase):
             port=self.config["streaming_config"]["port"],
             vhost=self.config["streaming_config"]["vhost"]
         )
-
-
     def test_subscribe(self):
         """Function to test the 'subscribe' method for AMQPEntity.
         """
-        response: AMQPResponse = self.amqp_entity.subscribe('datakaveri.org/e3a0cd8b7cfcf2fdf065b4b0cb13131a174be66c/vadodaraAQM')
-        
-        
-        
-
+        while(True):
+            response: AMQPResponse = self.amqp_entity.subscribe('datakaveri.org/e3a0cd8b7cfcf2fdf065b4b0cb13131a174be66c/vadodaraAQM')
+            time.sleep(5)
 if __name__ == '__main__':
     unittest.main()
