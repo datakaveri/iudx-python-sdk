@@ -29,11 +29,12 @@ class AMQPEntity():
         self.host: str = host
         self.vhost: str = vhost
         self.port : int = port
+        self.callback = None
         return
 
 
 
-    def subscribe(self, queue_name:str) -> AMQPResponse:
+    def subscribe(self, queue_name:str):
         """Method to subscribe to a stream of data.
 
         Args:
@@ -41,36 +42,23 @@ class AMQPEntity():
         Returns:
             response (AMQPResponse): AMQP Response after the subscription.
         """
-
-        def callback(self, ch, method, properties, body) -> AMQPResponse:
-            """Callback function for the PIKA streaming.
-
-            Args:
-            
-            Returns:
-                response (AMQPResponse): AMQP Response after the subscription.
-            """
-            response = AMQPResponse()
-            AMQPResponse()._response = body
-            return response
-        def set_callback(self,callback) -> AMQPResponse:
-            """Method to subscribe to a stream of data.
-
-            Args:
-            
-            Returns:
-                response (AMQPResponse): AMQP Response after the subscription.
-            """
-            self.Callback = callback(body)
         username = urllib.parse.quote_plus(self.sub_username)        
         connection = pika.BlockingConnection(pika.URLParameters(f"amqps://{username}:{self.password}@{self.host}:{str(self.port)}/{self.vhost}"))
         channel = connection.channel()
-        channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+        channel.basic_consume(queue=queue_name, on_message_callback=self.callback, auto_ack=True)
         channel.start_consuming()
 
+    def set_callback(self, callback):
+        """Method to subscribe to a stream of data.
 
+        Args:
         
+        Returns:
+            response (AMQPResponse): AMQP Response after the subscription.
+        """
+        self.callback = callback
     
+
 
 
      

@@ -15,6 +15,8 @@ from iudx.common.AMQPEntity import AMQPEntity
 class AMQPEntityTest(unittest.TestCase):
     """Test different scenarios for the AMQPEntity class.
     """
+    def callback(self, ch, method, properties, body):
+        print(body)
 
     def __init__(self, *args, **kwargs):
         """AMQPEntityTest base class constructor
@@ -24,6 +26,10 @@ class AMQPEntityTest(unittest.TestCase):
         with open("./config.json", "r") as f:
             self.config = json.load(f)
 
+       
+    def test_subscribe(self):
+        """Function to test the 'subscribe' method for AMQPEntity.
+        """
         self.amqp_entity = AMQPEntity(
             username=self.config["streaming_config"]["sub_username"],
             password=self.config["streaming_config"]["password"],
@@ -31,11 +37,11 @@ class AMQPEntityTest(unittest.TestCase):
             port=self.config["streaming_config"]["port"],
             vhost=self.config["streaming_config"]["vhost"]
         )
-    def test_subscribe(self):
-        """Function to test the 'subscribe' method for AMQPEntity.
-        """
+        self.amqp_entity.set_callback(self.callback)
+        self.amqp_entity.subscribe('datakaveri.org/f5443e47d00ad616b2f8bb4f116e4c9fe88e4835/ITMS-Analytics-Live')
         while(True):
-            response: AMQPResponse = self.amqp_entity.subscribe('datakaveri.org/e3a0cd8b7cfcf2fdf065b4b0cb13131a174be66c/vadodaraAQM')
+            
             time.sleep(5)
+
 if __name__ == '__main__':
     unittest.main()
