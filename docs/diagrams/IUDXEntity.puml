@@ -25,6 +25,12 @@ class Entity {
     ResourceServer rs
     list<Dict> resources
     str entity_id
+    pandas.DataFrme resources_df
+    str start_time
+    str end_time
+    str time_format
+    int slot_hours
+    int max_query_days
     -- private variables --
     string _iudx_entity_type
     string _voc_url
@@ -35,11 +41,18 @@ class Entity {
     list<dict> _quantitative_properties
     list<dict> _properties
     -- public methods --
+    Entity set_slot_hours(int hours)
+    Entity set_time_format(str format_str)
     pandas.DataFrame latest()
     pandas.DataFrame during_search(str start_time, str end_time)
     pandas.DataFrame property_search(str key, str/float value, str operation)
     pandas.DataFrame geo_search(str geoproperty,
         \t str geometry, str georel, 
         \t int _max_distance, list coordinates)
+    Entity download(str file_name)
+    Entity cli(str entity_id, str token,
+        \t str start_time, str end_time, 
+        \t str file_name, str file_type, 
+        \t boolean latest)
 }
 @enduml
