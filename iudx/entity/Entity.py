@@ -13,6 +13,8 @@ from iudx.rs.ResourceResult import ResourceResult
 
 import pandas as pd
 from datetime import date, datetime, timedelta
+import click
+
 
 Entity = TypeVar('T')
 str_or_float = TypeVar('str_or_float', str, float)
@@ -22,7 +24,7 @@ class Entity():
     """Abstract class for Entity. Helps to create a modular interface
        for each inidividual Entity.
     """
-    # TODO: need to check for better ways to load urls.
+    # TODO: need to check for better ways to load urls.    
     def __init__(
         self: Entity,
         entity_id: str=None,
@@ -37,6 +39,7 @@ class Entity():
         Args:
             entity_id (String): Id of the entity to be queried.
         """
+        # public variables
         self.catalogue: Catalogue = Catalogue(
             cat_url=cat_url,
             headers=headers,
@@ -45,7 +48,14 @@ class Entity():
         self.rs: ResourceServer = None
         self.resources: List[Dict] = []
         self.entity_id = entity_id
+        self.resources_df = None
+        self.start_time = None
+        self.end_time = None
+        self.time_format = "%Y-%m-%dT%H:%M:%SZ"
+        self.slot_hours = 24
+        self.max_query_days = 61
 
+        # private variables 
         self._iudx_entity_type: str = None
         self._voc_url: str = None
         self._cat_doc: Dict = None
@@ -55,12 +65,7 @@ class Entity():
         self._quantitative_properties: List[Dict] = None
         self._properties: List[Dict] = None
 
-        self.resources_df = None
-        self.start_time = None
-        self.end_time = None
-        self.time_format = "%Y-%m-%dT%H:%M:%SZ"
-        self.slot_hours = 24
-        self.max_query_days = 61
+        
 
         # Query the Catalogue module and fetch the item based on entity_id
         # and set the data descriptors
@@ -104,6 +109,24 @@ class Entity():
         )
         return
 
+    def set_slot_hours(self, hours:int=24) -> Entity:
+        """Setter Method to change the query slot time for fetching data.
+
+        Args:
+            hours (Integer): Interger slot value in hours.
+        """
+        self.slot_hours = hours
+        return self
+
+    def set_time_format(self, format_str:str="%Y-%m-%dT%H:%M:%SZ") -> Entity:
+        """Setter Method to change the query timestamp format.
+
+        Args:
+            format_str (String): String for setting time format.
+        """
+        self.time_format = format_str
+        return self
+    
     def latest(self) -> pd.DataFrame:
         """Method to fetch resources for latest data
             and generate a dataframe.
@@ -370,24 +393,122 @@ class Entity():
         self.resources_df = resources_df
         return resources_df
 
-    def download(self, file_name=None):
+    def download(self, file_name:str=None, file_type:str="csv") -> Entity:
+        """Method to use the dataframe generated using generated queries 
+            and download it in form of a zip file.
+
+        Args:
+            file_name (String): Custom file name for downloading.
+            file_type (String): The format in which data is downloaded.
+        """
+        supported_file_types = ["csv", "json"] 
+        try:    
+            file_type = file_type.lower()       
+        except:
+            pass
+
         if file_name is not None:
             file_name = file_name.split(".")[0]
         else:
             file_name = f"{self.entity_id.split('/')[-1]}_{self.start_time}_{self.end_time}"
-            
+
         compression_opts = dict(
-            method='zip', 
-            archive_name=f"{file_name}.csv"
+            method='zip',
+            archive_name=f"{file_name}.{file_type}"
         )
 
         if self.resources_df is not None:
-            self.resources_df.to_csv(
-                f"{file_name}.zip", 
-                index=False, 
-                compression=compression_opts
-            )
-            print(f"File downloaded successfully: '{file_name}.zip'")
+            if file_type == "csv":
+                self.resources_df.to_csv(
+                    f"{file_name}.zip", 
+                    index=False, 
+                    compression=compression_opts
+                )
+                print(f"File downloaded successfully: '{file_name}.zip'")
+            elif file_type == "json":
+                self.resources_df.to_json(
+                    f"{file_name}.zip", 
+                    orient="records",
+                    compression=compression_opts
+                )
+                print(f"File downloaded successfully: '{file_name}.zip'")
+            else:
+                raise RuntimeError(f"File type is not supported. \
+                    \nPlease choose a file type: \
+                    \n{supported_file_types}")            
         else:
             raise RuntimeError("Temporal query is required to download data.")
-        return 
+        return self
+
+    @click.command()
+    @click.pass_context
+    @click.option('--entity', 'entity_id', 
+        default=None, required=True, type=str, 
+        help='Entity Id to query.')
+    @click.option('--token', 'token', 
+        default=None, type=str, 
+        help='Consumer Token for Resource.')
+    @click.option('--start', 'start_time', 
+        default=None, type=str, 
+        help='Starting time for query.')
+    @click.option('--end', 'end_time', 
+        default=None, type=str, 
+        help='Ending time for query.')
+    @click.option('--download', 'file_name', 
+        default=None, type=str, 
+        help='Download file with custom name.')
+    @click.option('--type', 'file_type', 
+        default=None, type=str, 
+        help='Format in which file is downloaded.')    
+    @click.option('--latest', 
+        is_flag=True, default=None, type=str, 
+        help='Get latest data')
+    def cli(self, entity_id, token,
+            start_time, end_time, 
+            file_name, file_type, latest) -> Entity:
+        """Method to implement the command line interface for the
+        sdk for getting termporal query and download files.
+
+        Args:
+            entity_id (String): Id of the entity to be queried.
+            token (String): Consumer token to access Resources.
+            start_time (String): The starting timestamp for the query.
+            end_time (String): The ending timestamp for the query.
+            file_name (String): Custom file name for downloading.
+            file_type (String): The format in which data is downloaded.
+            latest (Boolean): Flag to query latest entity data.
+        """
+        entity = None
+        if entity_id is not None:
+            entity = Entity(entity_id=entity_id, token=token)
+        else:
+            raise RuntimeError("Some arguments are missing. \nUse: iudx --help")
+
+        if latest == False or latest == None:
+            if entity_id is not None and \
+                start_time is not None and \
+                end_time is not None and \
+                file_name is not None and \
+                file_type is not None :
+
+                entity.during_search(
+                    start_time=start_time,
+                    end_time=end_time
+                )
+                entity.download(file_name, file_type)
+            else:
+                raise RuntimeError("Some arguments are missing. \nUse: iudx --help")
+        else:
+            df = entity.latest()
+            try:
+                df.drop(["id"], axis=1, inplace=True)
+            except:
+                pass
+
+            print("Displaying top few rows of latest data:")
+            print("="*50)
+            print(df.head(10))
+
+            print("="*50)
+            print(f"Latest Data has {df.shape[0]} rows and {df.shape[1]} columns.")
+        return self

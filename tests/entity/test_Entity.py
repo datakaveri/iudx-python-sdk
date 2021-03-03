@@ -99,15 +99,25 @@ class EntityTest(unittest.TestCase):
                 self.assertIsNotNone(df)
                 self.assertIsInstance(df, pd.DataFrame)
             
-            self.entity.download(file_name)
+            for file_type in self.testVector["file_types"]:
+                self.entity.download(file_name, file_type)
 
-            zf = zipfile.ZipFile(f"{file_name}.zip")
-            df = pd.read_csv(zf.open(f"{file_name}.csv"))
+                zf = zipfile.ZipFile(f"{file_name}.zip")
+                
+                if file_type == "csv":
+                    df_csv = pd.read_csv(zf.open(f"{file_name}.{file_type}"))
+                    self.assertIsNotNone(df_csv)
+                    self.assertIsInstance(df_csv, pd.DataFrame)
+                    os.remove(f"{file_name}.zip")
 
-            self.assertIsNotNone(df)
-            self.assertIsInstance(df, pd.DataFrame)
-
-            os.remove(f"{file_name}.zip")
+                elif file_type == "json":
+                    df_json = pd.read_json(zf.open(f"{file_name}.{file_type}"), orient='records')
+                    self.assertIsNotNone(df_json)   
+                    self.assertIsInstance(df_json, pd.DataFrame)      
+                    os.remove(f"{file_name}.zip")           
+                
+                else:
+                    raise RuntimeError(f"File type '{file_type}' is not supported.")
 
 
 if __name__ == '__main__':
