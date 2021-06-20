@@ -27,41 +27,44 @@ class Token():
         self.headers = headers
         self.token: str = None
         self.token_response: dict = None
-        self.latest: bool = True
-        self.temporal: bool = False
-        self.complex: bool = False
-        self.apis_dict: dict = {"temporal": "/ngsi-ld/v1/temporal/entities",
-                                "complex": "/ngsi-ld/v1/entityOperations/query",
-                                "latest": "/ngsi-ld/v1/entities",
-                                "subscription": "/ngsi-ld/v1/subscription"}
-        self.entities: dict = {}
+        self.entities: list = []
         return
 
     def add_entity(
             self,
-            resource_id: str,
-            api_list: list):
+            resource_ids: list
+        ):
         """
         Method to add a private resource for which a token is required
 
         Args:
-            resource_id (String): ID of the private resource to be accessed
-            api_list (List of Strings): a list of the api capabailties required
-                - 'subscription'
-                - 'latest'
-                - 'temporal'
-                - 'complex'
+            resource_id (List): IDs of the private resources to be accessed
         """
-        apis = []
-        if len(api_list):
-            for api in api_list:
-                if api in self.apis_dict:
-                    apis.append(self.apis_dict[api])
-                else:
-                    raise RuntimeError(f"{api} is not a valid api")
+        self.entities.extend([i for i in resource_ids if i not in self.entities])
+        return
+    
+    def view_entities(self):
+        """
+        Method to view the entitiy ids added
+        """
+        if self.entities:
+            print(self.entities)
         else:
-            raise RuntimeError("api_list cannot be empty")
-        self.entities[resource_id] = apis
+            print("No entites added")
+        return
+    
+    def remove_entity(
+            self,
+            resource_ids: list
+        ):
+        """
+        Method to remove added entities
+        
+        Args:
+            resource_ids (List): IDs to be removed
+        """
+        for i in resource_ids:
+            self.entities.remove(i)
         return
 
     def request_token(self) -> str:
@@ -71,13 +74,8 @@ class Token():
         Returns the token (String) to access added the private resources
         """
         data = {}
-        requests = []
-        for entity in self.entities.keys():
-            request = {}
-            request["id"] = entity
-            request["apis"] = self.entities[entity]
-            requests.append(request)
-        data["request"] = requests
+        data["request"] = self.entities
+        
         s = Session()
         request = Request('POST',
                           url=self.auth_url,
