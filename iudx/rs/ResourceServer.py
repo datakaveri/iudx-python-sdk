@@ -11,6 +11,8 @@ from iudx.common.HTTPResponse import HTTPResponse
 from iudx.rs.ResourceQuery import ResourceQuery
 from iudx.rs.ResourceResult import ResourceResult
 
+from iudx.auth.Token import Token
+
 import multiprocessing
 
 
@@ -19,10 +21,14 @@ class ResourceServer():
        interface for the API to implement queries.
     """
 
-    def __init__(self, rs_url: str=None, token: str=None,
+    def __init__(self, rs_url: str=None, token: str=None, token_file: str=None,
                  headers: Dict[str, str]=None):
         """ResourceServer base class constructor
         """
+
+        if token is None and token_file is not None:
+            token = Token(authorization_token_file=token_file).request_token()
+
         self.url: str = rs_url
         self.token: str = token
         self.headers: Dict[str, str] = headers
