@@ -14,7 +14,7 @@ class Token:
             self,
             auth_url: str = "https://authorization.iudx.org.in/auth/v1/token",
             authorization_token: str = None,
-            authorization_token_file: str = None,
+            token_file: str = None,
             client_id: str = None,
             client_secret: str = None,
             headers: dict = None):
@@ -24,7 +24,7 @@ class Token:
         Args:
             auth_url (String): Authorization server url.
             authorization_token (String): Keycloak Issued token.
-            authorization_token_file (String): Path to Keycloak token file.
+            token_file (String): Path to Keycloak token file.
             client_id (String): Keycloak Issued clientId.
             client_secret (String): Keycloak Issued clientSecret.
             headers (Dict): Headers passed with the API Request.
@@ -34,11 +34,11 @@ class Token:
 
         if authorization_token is not None:
             headers.update({"Authorization": authorization_token})
-        elif authorization_token_file is not None:
-            with open(authorization_token_file) as f:
-                token_file = json.load(f)
-                if "access_token" in token_file.keys():
-                    headers.update({"Authorization": "Bearer " + token_file["access_token"]})
+        elif token_file is not None:
+            with open(token_file) as f:
+                token = json.load(f)
+                if "access_token" in token.keys():
+                    headers.update({"Authorization": "Bearer " + token["access_token"]})
                 else:
                     raise ValueError("'access_token' field missing in the file.")
         elif client_id is not None and client_secret is not None:

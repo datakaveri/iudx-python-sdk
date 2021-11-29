@@ -21,16 +21,17 @@ class ResourceServer():
        interface for the API to implement queries.
     """
 
-    def __init__(self, rs_url: str=None, token: str=None, token_file: str=None,
+    def __init__(self, rs_url: str=None, token: Token=None,
                  headers: Dict[str, str]=None):
         """ResourceServer base class constructor
         """
 
-        if token is None and token_file is not None:
-            token = Token(authorization_token_file=token_file).request_token()
+        new_token = None
+        if token is not None:
+            new_token = token.request_token()
 
         self.url: str = rs_url
-        self.token: str = token
+        self.token: str = new_token
         self.headers: Dict[str, str] = headers
         self.pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
 

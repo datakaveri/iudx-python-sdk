@@ -141,8 +141,11 @@ from iudx.auth.Token import Token
 # Create a Token object with authorization token.
 token = Token(auth_url="https://authorization.iudx.org.in/auth/v1/token", authorization_token=auth_token) # Keycloak issued token "Bearer <JWT>"
 
+# Create a Token object with token file.
+# token = Token(token_file=toke_file_path) # Keycloak issued token
+
 # Create a Token object with client id and client secret.
-# token = Token(auth_url="https://authorization.iudx.org.in/auth/v1/token", client_id=client_id, client_secret=client_secret)
+# token = Token(client_id=client_id, client_secret=client_secret)
 
 # Item id for the varanasi env aqm sensor.
 item_id = "varanasismartcity.gov.in/62d1f729edd3d2a1a090cb1c6c89356296963d55/rs.iudx.org.in/varanasi-env-aqm"
