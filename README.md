@@ -132,6 +132,31 @@ file_type = "csv"          # can be CSV or JSON
 entity.download(file_name=file_name)
 ```
 
+### 5) Request access token example
+* Get the token for accessing private resources using either Authorization token or clientId/clientSecret.
+
+```python
+from iudx.auth.Token import Token
+
+# Create a Token object with authorization token.
+token = Token(auth_url="https://authorization.iudx.org.in/auth/v1/token", authorization_token=auth_token) # Keycloak issued token "Bearer <JWT>"
+
+# Create a Token object with client id and client secret.
+# token = Token(auth_url="https://authorization.iudx.org.in/auth/v1/token", client_id=client_id, client_secret=client_secret)
+
+# Item id for the varanasi env aqm sensor.
+item_id = "varanasismartcity.gov.in/62d1f729edd3d2a1a090cb1c6c89356296963d55/rs.iudx.org.in/varanasi-env-aqm"
+
+# Set a private resource to access.
+token.set_item(
+    item_id=item_id,
+    item_type="resource_group",
+    role="consumer")               # Role of the user.
+
+# Get access token for the private resource.
+access_token = token.request_token()
+```
+
 ## CLI
 
 ### 1) Download the data based on a during entity query.

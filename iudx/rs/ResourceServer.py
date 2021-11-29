@@ -59,7 +59,7 @@ class ResourceServer():
             rs_results (List[ResourceResult]): returns a list of 
                 ResourceResult object.
         """
-        url = self.url + "/entityOperations/query"
+        url = self.url + "/temporal/entityOperations/query"
 
         zipped_url = []
         for query in queries:
