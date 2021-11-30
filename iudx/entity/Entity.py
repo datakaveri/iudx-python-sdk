@@ -4,6 +4,7 @@ Entity.py
 """
 from typing import TypeVar, Generic, Any, List, Dict
 
+from iudx.auth.Token import Token
 from iudx.cat.Catalogue import Catalogue
 from iudx.cat.CatalogueQuery import CatalogueQuery
 
@@ -31,7 +32,8 @@ class Entity():
         cat_url: str="https://api.catalogue.iudx.org.in/iudx/cat/v1",
         rs_url: str="https://rs.iudx.org.in/ngsi-ld/v1",
         headers: Dict={"content-type": "application/json"},
-        token: str=None
+        token: str=None,
+        token_obj: Token=None
     ):
         """Entity base class constructor for getting the resources from
                 catalogue server.
@@ -39,6 +41,10 @@ class Entity():
         Args:
             entity_id (String): Id of the entity to be queried.
         """
+        # Request access token
+        if token is None and token_obj is not None:
+            token = token_obj.request_token()
+
         # public variables
         self.catalogue: Catalogue = Catalogue(
             cat_url=cat_url,
