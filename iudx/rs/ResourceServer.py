@@ -25,7 +25,6 @@ class ResourceServer():
                  headers: Dict[str, str]=None):
         """ResourceServer base class constructor
         """
-
         new_token = None
         if token is not None:
             new_token = token.request_token()
