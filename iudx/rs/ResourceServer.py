@@ -87,7 +87,7 @@ class ResourceServer():
         for query in queries:
             offset, limit = query.get_offset_limit()
             if offset is not None and limit is not None:
-                url = "?offset=" + offset + "&limit=" + limit
+                url += "?offset=" + offset + "&limit=" + limit
             zipped_url.append((url, query.get_query(), self.headers))
 
         responses: List[HTTPResponse] = self.pool.starmap(
@@ -106,7 +106,7 @@ class ResourceServer():
             for offset in range(total_offset):
                 zipped_url = []
                 for query in queries:
-                    url = "?offset=" + str(offset + 1) + "&limit=" + str(limit)
+                    url += "?offset=" + str(offset + 1) + "&limit=" + str(limit)
                     zipped_url.append((url, query.get_query(), self.headers))
 
                 responses: List[HTTPResponse] = self.pool.starmap(
