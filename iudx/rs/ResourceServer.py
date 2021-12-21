@@ -100,7 +100,7 @@ class ResourceServer():
         # Fetch all pagination results
         if offset is None and limit is None and len(rs_results) != 0:
             total_hits = rs_results[0].totalHits
-            limit = 5000  # Max limit
+            limit = rs_results[0].limit
             total_offset = int((total_hits - 1) / limit)
 
             for offset in range(total_offset):
