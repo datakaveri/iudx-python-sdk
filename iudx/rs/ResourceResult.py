@@ -18,4 +18,7 @@ class ResourceResult():
         self.results: List[Dict] = ""
         self.type: int = 0
         self.title: str = ""
+        self.offset: int = 0
+        self.limit: int = 0
+        self.totalHits : int = 0
         return

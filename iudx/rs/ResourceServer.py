@@ -48,6 +48,26 @@ class ResourceServer():
         """
         return self
 
+    def parse_response(self, responses: List[HTTPResponse]) -> List[ResourceResult]:
+        rs_results = []
+        for response in responses:
+            rs_result = ResourceResult()
+
+            if response.get_status_code() == 401:
+                raise RuntimeError("Not Authorized: Invalid Credentials")
+
+            elif response.get_status_code() == 200:
+                result_data = response.get_json()
+                rs_result.type = result_data["type"]
+                rs_result.title = result_data["title"]
+                rs_result.results = result_data["results"]
+                rs_result.offset = result_data["offset"]
+                rs_result.limit = result_data["limit"]
+                rs_result.totalHits = result_data["totalHits"]
+                rs_results.append(rs_result)
+
+        return rs_results
+
     def get_data(self, queries: List[ResourceQuery]) -> List[ResourceResult]:
         """Method to post the request for geo, temporal, property, add filters
             and make complex query.
@@ -62,7 +82,12 @@ class ResourceServer():
         url = self.url + "/temporal/entityOperations/query"
 
         zipped_url = []
+        offset = None
+        limit = None
         for query in queries:
+            offset, limit = query.get_offset_limit()
+            if offset is not None and limit is not None:
+                url = "?offset=" + offset + "&limit=" + limit
             zipped_url.append((url, query.get_query(), self.headers))
 
         responses: List[HTTPResponse] = self.pool.starmap(
@@ -70,19 +95,26 @@ class ResourceServer():
             zipped_url
             )
 
-        rs_results = []
-        for response in responses:
-            rs_result = ResourceResult()
+        rs_results = self.parse_response(responses)
 
-            if response.get_status_code() == 401:
-                raise RuntimeError("Not Authorized: Invalid Credentials")
+        # Fetch all pagination results
+        if offset is None and limit is None and len(rs_results) != 0:
+            total_hits = rs_results[0].totalHits
+            limit = 5000  # Max limit
+            total_offset = int((total_hits - 1) / limit)
 
-            elif response.get_status_code() == 200:
-                result_data = response.get_json()
-                rs_result.type = result_data["type"]
-                rs_result.title = result_data["title"]
-                rs_result.results = result_data["results"]
-                rs_results.append(rs_result)
+            for offset in range(total_offset):
+                zipped_url = []
+                for query in queries:
+                    url = "?offset=" + str(offset + 1) + "&limit=" + str(limit)
+                    zipped_url.append((url, query.get_query(), self.headers))
+
+                responses: List[HTTPResponse] = self.pool.starmap(
+                    HTTPEntity().post,
+                    zipped_url
+                )
+
+                rs_results = rs_results + self.parse_response(responses)
 
         return rs_results
 

@@ -31,6 +31,8 @@ class ResourceQuery():
         self._text_query: str = None
         self._filters: List[str] = []
         self._entities: List[str] = []
+        self._offset: str = None
+        self._limit: str = None
         return
 
     def add_entity(self, iid: str) -> ResourceQuery:
@@ -114,6 +116,20 @@ class ResourceQuery():
         else:
             raise RuntimeError("Latest search requires at least one entity.")
         return latest_opts
+
+    def set_offset_limit(self, offset: int = None, limit: int = None) -> ResourceQuery:
+        """Method to paginate the result.
+
+        Args:
+            offset (str): The offset from the first result to fetch.
+            limit (str): Maximum results to be returned
+        """
+        self._offset = offset
+        self._limit = limit
+        return self
+
+    def get_offset_limit(self):
+        return self._offset, self._limit
 
     def get_query(self) -> str:
         """Method to build query for geo, temporal, propery and add filter.
