@@ -31,8 +31,8 @@ class ResourceQuery():
         self._text_query: str = None
         self._filters: List[str] = []
         self._entities: List[str] = []
-        self._offset: str = None
-        self._limit: str = None
+        self._offset: int = None
+        self._limit: int = None
         return
 
     def add_entity(self, iid: str) -> ResourceQuery:
