@@ -25,7 +25,7 @@ class Entity():
     """Abstract class for Entity. Helps to create a modular interface
        for each inidividual Entity.
     """
-    # TODO: need to check for better ways to load urls.    
+    # TODO: need to check for better ways to load urls.
     def __init__(
         self: Entity,
         entity_id: str=None,
@@ -71,7 +71,7 @@ class Entity():
         self._quantitative_properties: List[Dict] = None
         self._properties: List[Dict] = None
 
-        
+
 
         # Query the Catalogue module and fetch the item based on entity_id
         # and set the data descriptors
@@ -132,7 +132,7 @@ class Entity():
         """
         self.time_format = format_str
         return self
-    
+
     def latest(self) -> pd.DataFrame:
         """Method to fetch resources for latest data
             and generate a dataframe.
@@ -181,13 +181,15 @@ class Entity():
         return resources_df
 
     def during_search(self, start_time: str=None,
-                      end_time: str=None) -> pd.DataFrame:
+                      end_time: str=None, offset: str=None, limit: str=None) -> pd.DataFrame:
         """Method to fetch resources for temporal based search
             and generate a dataframe.
 
         Args:
             start_time (String): The starting timestamp for the query.
             end_time (String): The ending timestamp for the query.
+            offset (String): The offset from the first result to fetch.
+            limit (String): The maximum results to be returned.
 
         Returns:
             resources_df (pd.DataFrame): Pandas DataFrame with temporal data.
@@ -212,15 +214,16 @@ class Entity():
         while date <= end_date:
             days.append(date.strftime(self.time_format))
             date += timedelta(hours=self.slot_hours)
-            
+
         if (date-end_date).seconds > 0:
             days.append(end_date.strftime(self.time_format))
-        
+
         resources_df = pd.DataFrame()
         queries = []
         for resource in self.resources:
             for i in range(len(days)):
                 resource_query = ResourceQuery()
+                resource_query.set_offset_limit(offset, limit)
                 resource_query.add_entity(resource["id"])
 
                 try:
@@ -269,7 +272,7 @@ class Entity():
         self.resources_df = resources_df
         return resources_df
 
-    def property_search(self, key: str=None, value: str_or_float=None, 
+    def property_search(self, key: str=None, value: str_or_float=None,
                         operation: str=None) -> pd.DataFrame:
         """Method to fetch resources for temporal based search
             and generate a dataframe.
@@ -407,9 +410,9 @@ class Entity():
             file_name (String): Custom file name for downloading.
             file_type (String): The format in which data is downloaded.
         """
-        supported_file_types = ["csv", "json"] 
-        try:    
-            file_type = file_type.lower()       
+        supported_file_types = ["csv", "json"]
+        try:
+            file_type = file_type.lower()
         except:
             pass
 
@@ -426,14 +429,14 @@ class Entity():
         if self.resources_df is not None:
             if file_type == "csv":
                 self.resources_df.to_csv(
-                    f"{file_name}.zip", 
-                    index=False, 
+                    f"{file_name}.zip",
+                    index=False,
                     compression=compression_opts
                 )
                 print(f"File downloaded successfully: '{file_name}.zip'")
             elif file_type == "json":
                 self.resources_df.to_json(
-                    f"{file_name}.zip", 
+                    f"{file_name}.zip",
                     orient="records",
                     compression=compression_opts
                 )
@@ -441,37 +444,57 @@ class Entity():
             else:
                 raise RuntimeError(f"File type is not supported. \
                     \nPlease choose a file type: \
-                    \n{supported_file_types}")            
+                    \n{supported_file_types}")
         else:
             raise RuntimeError("Temporal query is required to download data.")
         return self
 
     @click.command()
     @click.pass_context
-    @click.option('--entity', 'entity_id', 
-        default=None, required=True, type=str, 
+    @click.option('--entity', 'entity_id',
+        default=None, required=True, type=str,
         help='Entity Id to query.')
-    @click.option('--token', 'token', 
-        default=None, type=str, 
+    @click.option('--token', 'token',
+        default=None, type=str,
         help='Consumer Token for Resource.')
-    @click.option('--start', 'start_time', 
-        default=None, type=str, 
+    @click.option('--start', 'start_time',
+        default=None, type=str,
         help='Starting time for query.')
-    @click.option('--end', 'end_time', 
-        default=None, type=str, 
+    @click.option('--end', 'end_time',
+        default=None, type=str,
         help='Ending time for query.')
-    @click.option('--download', 'file_name', 
-        default=None, type=str, 
+    @click.option('--download', 'file_name',
+        default=None, type=str,
         help='Download file with custom name.')
-    @click.option('--type', 'file_type', 
-        default=None, type=str, 
-        help='Format in which file is downloaded.')    
-    @click.option('--latest', 
-        is_flag=True, default=None, type=str, 
+    @click.option('--type', 'file_type',
+        default=None, type=str,
+        help='Format in which file is downloaded.')
+    @click.option('--latest',
+        is_flag=True, default=None, type=str,
         help='Get latest data')
+    @click.option('--offset', 'offset',
+        default=None, type=str,
+        help='The offset from the first result to fetch.')
+    @click.option('--limit', 'limit',
+        default=None, type=str,
+        help='The maximum results to be returned.')
+    @click.option('--clientid', 'client_id',
+        default=None, type=str,
+        help='Client Id for requesting token.')
+    @click.option('--secret', 'client_secret',
+        default=None, type=str,
+        help='Client Secret for requesting token.')
+    @click.option('--entity-type', 'entity_type',
+          default=None, type=str,
+          help='Type of the item')
+    @click.option('--role', 'role',
+          default="consumer", type=str,
+          help='Role of the user')
     def cli(self, entity_id, token,
-            start_time, end_time, 
-            file_name, file_type, latest) -> Entity:
+            start_time, end_time,
+            file_name, file_type, latest,
+            client_id, client_secret, entity_type, role,
+            offset, limit) -> Entity:
         """Method to implement the command line interface for the
         sdk for getting termporal query and download files.
 
@@ -483,10 +506,22 @@ class Entity():
             file_name (String): Custom file name for downloading.
             file_type (String): The format in which data is downloaded.
             latest (Boolean): Flag to query latest entity data.
+            client_id (String): Client Id for requesting token.
+            client_secret (String): Client Secret for requesting token.
+            entity_type (String): Type of the Entity.
+            role (String):  Role of the User.
+            offset (String): The offset from the first result to fetch.
+            limit (String): The maximum results to be returned.
         """
         entity = None
         if entity_id is not None:
-            entity = Entity(entity_id=entity_id, token=token)
+            if token is None and client_id is not None and client_secret is not None:
+                token_obj = Token(client_id=client_id, client_secret=client_secret)
+                if entity_type is not None and role is not None:
+                    token_obj.set_item(item_id=entity_id, item_type=entity_type, role=role)
+                entity = Entity(entity_id=entity_id, token_obj=token_obj)
+            else:
+                entity = Entity(entity_id=entity_id, token=token)
         else:
             raise RuntimeError("Some arguments are missing. \nUse: iudx --help")
 
@@ -499,7 +534,9 @@ class Entity():
 
                 entity.during_search(
                     start_time=start_time,
-                    end_time=end_time
+                    end_time=end_time,
+                    offset=offset,
+                    limit=limit
                 )
                 entity.download(file_name, file_type)
             else:

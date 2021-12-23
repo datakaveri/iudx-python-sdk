@@ -3,8 +3,7 @@
 ResourceServer.py
 """
 import json
-import datetime
-import dateutil.parser
+from datetime import datetime, timedelta
 from typing import TypeVar, Generic, Any, List, Dict
 
 from iudx.common.HTTPEntity import HTTPEntity
@@ -35,6 +34,7 @@ class ResourceServer():
         self.token: str = token
         self.headers: Dict[str, str] = headers
         self.pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
+        self.time_format = "%Y-%m-%dT%H:%M:%SZ"
 
         if self.token is not None:
             self.headers["token"] = self.token
@@ -123,8 +123,8 @@ class ResourceServer():
            results for all the data fetched
        """
 
-        new_start_time = dateutil.parser.isoparse(start_time)
-        new_end_time = dateutil.parser.isoparse(end_time)
+        new_start_time = datetime.strptime(start_time, self.time_format)
+        new_end_time = datetime.strptime(end_time, self.time_format)
 
         if new_start_time >= new_end_time:
             return []
@@ -151,8 +151,8 @@ class ResourceServer():
             return results + self.get_all_data(results, url, queries)
 
         new_mid_time = new_start_time + (new_end_time - new_start_time) / 2
-        final_mid_time = new_mid_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-        next_mid_time = (new_mid_time + datetime.timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        final_mid_time = new_mid_time.strftime(self.time_format)
+        next_mid_time = (new_mid_time + timedelta(seconds=1)).strftime(self.time_format)
 
         results += self.get_data_recursively(start_time, final_mid_time, url, queries)
         results += self.get_data_recursively(next_mid_time, end_time, url, queries)

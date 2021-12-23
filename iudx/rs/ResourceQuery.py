@@ -121,8 +121,8 @@ class ResourceQuery():
         """Method to paginate the result.
 
         Args:
-            offset (str): The offset from the first result to fetch.
-            limit (str): Maximum results to be returned
+            offset (int): The offset from the first result to fetch.
+            limit (int): Maximum results to be returned
         """
         self._offset = offset
         self._limit = limit
