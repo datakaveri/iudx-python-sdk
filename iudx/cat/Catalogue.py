@@ -59,7 +59,7 @@ class Catalogue():
         if response.get_status_code() == 200:
             cat_result.documents = result_data["results"]
             cat_result.total_hits = result_data["totalHits"]
-            cat_result.status = result_data["status"]
+            cat_result.status = result_data["type"]
         return cat_result
 
     def count_entity(self, query: CatalogueQuery) -> CatalogueResult:
@@ -80,7 +80,7 @@ class Catalogue():
         if response.get_status_code() == 200:
             cat_result.documents = result_data["results"]
             cat_result.total_hits = result_data["totalHits"]
-            cat_result.status = result_data["status"]
+            cat_result.status = result_data["type"]
         return cat_result
 
     def list_entity(self, entity_type: str) -> CatalogueResult:
@@ -102,7 +102,7 @@ class Catalogue():
         if response.get_status_code() == 200:
             cat_result.documents = result_data["results"]
             cat_result.total_hits = result_data["totalHits"]
-            cat_result.status = result_data["status"]
+            cat_result.status = result_data["type"]
         return cat_result
 
     def get_related_entity(self, iid: str, rel: str) -> CatalogueResult:
@@ -126,7 +126,7 @@ class Catalogue():
         if response.get_status_code() == 200:
             cat_result.documents = result_data["results"]
             cat_result.total_hits = result_data["totalHits"]
-            cat_result.status = result_data["status"]
+            cat_result.status = result_data["type"]
         return cat_result
 
     def rel_search(self, query: CatalogueQuery) -> CatalogueResult:
@@ -159,7 +159,7 @@ class Catalogue():
         if response.get_status_code() == 200:
             cat_result.documents = result_data["results"]
             cat_result.total_hits = result_data["totalHits"]
-            cat_result.status = result_data["status"]
+            cat_result.status = result_data["type"]
         return cat_result
 
     def create(self, item: Dict[str, Any]) -> CatalogueResult:
