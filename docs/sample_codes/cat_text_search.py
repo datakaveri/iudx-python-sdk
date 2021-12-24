@@ -3,7 +3,7 @@ from iudx.cat.CatalogueQuery import CatalogueQuery
 
 # creating an object of Catalogue class using cat_url.
 cat = Catalogue(
-        cat_url="https://api.catalogue.iudx.io/iudx/cat/v1",
+        cat_url="https://api.catalogue.iudx.org.in/iudx/cat/v1",
         headers={"content-type": "application/json"}
         )                                       
 

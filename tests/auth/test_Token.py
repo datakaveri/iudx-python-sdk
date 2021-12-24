@@ -6,11 +6,10 @@ import unittest
 import json
 import sys
 sys.path.insert(1, './')
-from iudx.cat.Catalogue import Catalogue
-from iudx.cat.CatalogueQuery import CatalogueQuery
+from iudx.cat.Auth import Token
 
 
-class CatalogueTest(unittest.TestCase):
+class TokenTest(unittest.TestCase):
     """Test different scenarios for the Catalogue class.
     """
     def setUp(self):
