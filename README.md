@@ -182,13 +182,15 @@ iudx --entity datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.or
 # Sample command
 iudx 
   --entity <entity_id> 
-  --token <token_id> (only for private resources which requires auth)
+  --clientid <clientID> 
+  --secret <clientSecret> 
   --latest
 
 # Example
-iudx --entity datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.org.in/pune-env-aqm/f36b4669-628b-ad93-9970-f9d424afbf75 --latest
+iudx --entity suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta --clientid=<clientID> --secret=<clientSecret> --entity-type=resource --role=consumer --start 2021-01-01T14:20:00Z --end 2021-01-09T14:20:00Z --download=sample --type=json
 ```
-NOTE: `--token` is required for the entities which are not public.<br>
+NOTE: `--clientid --secret` is required for the all entities (open and secure). To obtain this, register on https://catalogue.iudx.org.in/ <br>
+
 Use: `iudx --help` to know more about all possible options.
 
 ## API Docs
