@@ -1,5 +1,5 @@
 {
-    "cat_url": "https://api.catalogue.iudx.io/iudx/cat/v1/search",
+    "cat_url": "https://api.catalogue.iudx.org.in/iudx/cat/v1/search",
 
     "headers": {"content-type": "application/json"},
 
