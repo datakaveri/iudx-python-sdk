@@ -34,7 +34,7 @@ class ResourceServer():
         self.token: str = token
         self.headers: Dict[str, str] = headers
         self.pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
-        self.time_format = "%Y-%m-%dT%H:%M:%SZ"
+        self.time_format = "%Y-%m-%dT%H:%M:%S%z"
 
         if self.token is not None:
             self.headers["token"] = self.token
