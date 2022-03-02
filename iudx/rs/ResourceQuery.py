@@ -5,6 +5,7 @@ ResourceQuery.py
 
 from typing import TypeVar, Generic, Any, List, Dict
 import json
+from datetime import date, datetime, timedelta
 
 ResourceQuery = TypeVar('T')
 str_or_float = TypeVar('str_or_float', str, float)
@@ -33,7 +34,13 @@ class ResourceQuery():
         self._entities: List[str] = []
         self._offset: int = None
         self._limit: int = None
+        self._count: bool = None
+        self.time_format = "%Y-%m-%dT%H:%M:%SZ"
         return
+
+    def strptime(self, time):
+        return datetime.strptime(time, self.time_format)
+
 
     def add_entity(self, iid: str) -> ResourceQuery:
         """Method to add ids to the entity list.
@@ -73,7 +80,13 @@ class ResourceQuery():
             end_time (String): The ending timestamp for the search.
         """
         self._start_time = start_time
+        self._start_time_datetime = self.strptime(start_time)
         self._end_time = end_time
+        self._end_time_datetime = self.strptime(end_time)
+        return self
+
+    def count(self):
+        self._count = True
         return self
 
     def property_search(self, key: str=None, value: str_or_float=None,
@@ -190,6 +203,9 @@ class ResourceQuery():
 
                 else:
                     raise RuntimeError("Property search needs temporal components.")
+
+            if self._count is True:
+                opts["options"] = "count"
 
             # adding filters to query.
             if self._filters is not None and len(self._filters) > 0:

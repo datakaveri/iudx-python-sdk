@@ -15,6 +15,8 @@ from iudx.rs.ResourceResult import ResourceResult
 import pandas as pd
 from datetime import date, datetime, timedelta
 import click
+import copy
+import tqdm
 
 
 Entity = TypeVar('T')
@@ -115,6 +117,7 @@ class Entity():
         )
         return
 
+    """ Deprecated """
     def set_slot_hours(self, hours:int=24) -> Entity:
         """Setter Method to change the query slot time for fetching data.
 
@@ -180,62 +183,82 @@ class Entity():
         resources_df = resources_df.reset_index(drop=True)
         return resources_df
 
+    def make_query_batches(self, q: ResourceQuery, batch_queries: List[ResourceQuery]):
+        res = []
+        res =  self.rs.get_data([q])
+        for r in res:
+            if (r.totalHits > 5000):
+                mid_time = (q._start_time_datetime + (q._end_time_datetime - q._start_time_datetime)/2)
+                mid_time_str = mid_time.strftime(self.time_format)
+                qa = copy.deepcopy(q)
+                qa.during_search(start_time=q._start_time,
+                                    end_time=mid_time_str)
+                qb = copy.deepcopy(q)
+                qb.during_search(start_time=mid_time.strftime(self.time_format),
+                                    end_time=q._end_time)
+                self.make_query_batches(qa, batch_queries)
+                self.make_query_batches(qb, batch_queries)
+            else:
+                return batch_queries.append(q)
+
+
+
+
+    def make_date_bins(self, start_date, end_date, date_bins):
+        if (end_date - start_date > timedelta(days=10)):
+            next_date = start_date + timedelta(days=10)
+            date_bins.append(start_date.strftime(self.time_format))
+            self.make_date_bins(next_date, end_date, date_bins)
+        else:
+            date_bins.append(start_date.strftime(self.time_format))
+            date_bins.append(end_date.strftime(self.time_format))
+            return
+
+
+
     def during_search(self, start_time: str=None,
-                      end_time: str=None, offset: str=None, limit: str=None) -> pd.DataFrame:
+                      end_time: str=None, offset: int=None, limit: int=None) -> pd.DataFrame:
         """Method to fetch resources for temporal based search
             and generate a dataframe.
 
         Args:
             start_time (String): The starting timestamp for the query.
             end_time (String): The ending timestamp for the query.
-            offset (String): The offset from the first result to fetch.
-            limit (String): The maximum results to be returned.
+            offset (Integer): The offset from the first result to fetch.
+            limit (Integer): The maximum results to be returned.
 
         Returns:
             resources_df (pd.DataFrame): Pandas DataFrame with temporal data.
         """
+        print("Downloading data. This may take a while")
         self.start_time = start_time
         self.end_time = end_time
 
-        days = []
         start_date = datetime.strptime(self.start_time, self.time_format)
         end_date = datetime.strptime(self.end_time, self.time_format)
 
         if end_date <= start_date:
             raise RuntimeError("'end_time' should be greater than 'start_time'")
 
-        try:
-            if (end_date-start_date).days > self.max_query_days:
-                raise RuntimeError("Can't query more than 2 months of data at once.")
-        except:
-            pass
-
-        date = start_date
-        while date <= end_date:
-            days.append(date.strftime(self.time_format))
-            date += timedelta(hours=self.slot_hours)
-
-        if (date-end_date).seconds > 0:
-            days.append(end_date.strftime(self.time_format))
+        date_bins = []
+        self.make_date_bins(start_date, end_date, date_bins)
 
         resources_df = pd.DataFrame()
+
+        """ Make batch queries """
         queries = []
         for resource in self.resources:
-            for i in range(len(days)):
+            for i in range(0,len(date_bins)-1):
                 resource_query = ResourceQuery()
                 resource_query.set_offset_limit(offset, limit)
                 resource_query.add_entity(resource["id"])
+                resource_query.during_search(
+                        start_time=date_bins[i],
+                        end_time=date_bins[i+1])
+                batch_queries = []
+                self.make_query_batches(resource_query, batch_queries)
+                queries += batch_queries
 
-                try:
-                    start = days[i]
-                    end = days[i+1]
-                    query = resource_query.during_search(
-                        start_time=start,
-                        end_time=end
-                    )
-                    queries.append(query)
-                except:
-                    pass
 
         rs_results: List[ResourceResult] = self.rs.get_data(queries)
 

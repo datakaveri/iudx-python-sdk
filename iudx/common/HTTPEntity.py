@@ -7,6 +7,8 @@ from requests import Request, Session
 from typing import TypeVar, Dict
 from iudx.common.HTTPResponse import HTTPResponse
 import json
+import warnings
+
 
 HTTPEntity = TypeVar('T')
 
@@ -22,6 +24,7 @@ class HTTPEntity(Request):
         Args:
             cert (Dict): certificate for authentication.
         """
+        warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
         Request.__init__(self)
         return
 
