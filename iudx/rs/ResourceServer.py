@@ -32,7 +32,10 @@ class ResourceServer():
 
         self.url: str = rs_url
         self.token: str = token
-        self.headers: Dict[str, str] = headers
+        if (headers is not None):
+            self.headers: Dict[str, str] = headers
+        else:
+            self.headers = {}
         self.pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
         self.time_format = "%Y-%m-%dT%H:%M:%S%z"
 
@@ -48,7 +51,7 @@ class ResourceServer():
         Returns:
             returned-varaible (returned-varaible-type): return-variable-description
         """
-        return self
+        return False
 
     def parse_response(self, responses: List[HTTPResponse]) -> List[ResourceResult]:
         """Parse responses
@@ -70,13 +73,17 @@ class ResourceServer():
                 rs_result.type = result_data["type"]
                 rs_result.title = result_data["title"]
                 rs_result.results = result_data["results"]
-                rs_result.offset = result_data["offset"]
-                rs_result.limit = result_data["limit"]
-                rs_result.totalHits = result_data["totalHits"]
+                if ("offset" in result_data.keys()):
+                    rs_result.offset = result_data["offset"]
+                if ("limit" in result_data.keys()):
+                    rs_result.limit = result_data["limit"]
+                if ("totalHits" in result_data.keys()):
+                    rs_result.totalHits = result_data["totalHits"]
                 rs_results.append(rs_result)
 
         return rs_results
 
+    """ Deprecated"""
     def get_all_data(self, rs_results: List[ResourceResult], url: str, queries: List[ResourceQuery]):
         """Helper method for fetching all the data between the time range.
 
@@ -108,7 +115,8 @@ class ResourceServer():
 
         return rs_results
 
-    def get_data_recursively(self, start_time: str, end_time: str, url: str, queries: List[ResourceQuery]):
+    """ Deprecated"""
+    def get_data_recursively(self, results: List[ResourceResult], start_time: str, end_time: str, url: str, queries: List[ResourceQuery]):
         """Helper method for recursively fetch data between the time range
 
             Since the maximum offset for fetching data is 49999, the range which contains more totalHits will be
@@ -121,7 +129,7 @@ class ResourceServer():
            queries (List[ResourceQuery]): A list of query objects of ResourceQuery class.
        Returns:
            results for all the data fetched
-       """
+        """
 
         new_start_time = datetime.strptime(start_time, self.time_format)
         new_end_time = datetime.strptime(end_time, self.time_format)
@@ -140,22 +148,23 @@ class ResourceServer():
             zipped_url
         )
 
-        results = self.parse_response(responses)
+        results += self.parse_response(responses)
         if len(results) == 0:
             return []
 
         total_hits = results[0].totalHits
         if total_hits < 5000:
-            return results
+            return 
         elif total_hits < 50000:
-            return results + self.get_all_data(results, url, queries)
+            results +=  self.get_all_data(results, url, queries)
+            return
 
         new_mid_time = new_start_time + (new_end_time - new_start_time) / 2
         final_mid_time = new_mid_time.strftime(self.time_format)
         next_mid_time = (new_mid_time + timedelta(seconds=1)).strftime(self.time_format)
 
-        results += self.get_data_recursively(start_time, final_mid_time, url, queries)
-        results += self.get_data_recursively(next_mid_time, end_time, url, queries)
+        self.get_data_recursively(results, start_time, final_mid_time, url, queries)
+        self.get_data_recursively(results, next_mid_time, end_time, url, queries)
         return results
 
     def get_data(self, queries: List[ResourceQuery]) -> List[ResourceResult]:
@@ -188,17 +197,14 @@ class ResourceServer():
                 new_url = url + "?offset=" + str(offset) + "&limit=" + str(limit)
             zipped_url.append((new_url, new_query, self.headers))
 
-        if offset is not None and limit is not None:
-            responses: List[HTTPResponse] = self.pool.starmap(
-                HTTPEntity().post,
-                zipped_url
-                )
-
-            rs_results = self.parse_response(responses)
-        elif start_time is not None and end_time is not None:
-            rs_results = self.get_data_recursively(start_time, end_time, url, queries)
+        responses: List[HTTPResponse] = self.pool.starmap(
+            HTTPEntity().post,
+            zipped_url
+            )
+        rs_results = self.parse_response(responses)
 
         return rs_results
+
 
     def get_latest(self, queries: List[ResourceQuery]) -> List[ResourceResult]:
         """Method to get the request for latest resource data.
