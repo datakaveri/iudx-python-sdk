@@ -37,7 +37,6 @@ class ResourceServer():
         else:
             self.headers = {}
         self.pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
-        self.time_format = "%Y-%m-%dT%H:%M:%SZ"
 
         if self.token is not None:
             self.headers["token"] = self.token
@@ -115,57 +114,6 @@ class ResourceServer():
 
         return rs_results
 
-    """ Deprecated"""
-    def get_data_recursively(self, results: List[ResourceResult], start_time: str, end_time: str, url: str, queries: List[ResourceQuery]):
-        """Helper method for recursively fetch data between the time range
-
-            Since the maximum offset for fetching data is 49999, the range which contains more totalHits will be
-            chunked into various time ranges recursively and data is fetched for all time ranges.
-
-       Args:
-           start_time (str): The starting timestamp for the search.
-           end_time (str): The ending timestamp for the search.
-           url (str): request url
-           queries (List[ResourceQuery]): A list of query objects of ResourceQuery class.
-       Returns:
-           results for all the data fetched
-        """
-
-        new_start_time = datetime.strptime(start_time, self.time_format)
-        new_end_time = datetime.strptime(end_time, self.time_format)
-
-        if new_start_time >= new_end_time:
-            return []
-
-        zipped_url = []
-        for query in queries:
-            query.during_search(start_time, end_time)
-            new_query = query.get_query()
-            zipped_url.append((url, new_query, self.headers))
-
-        responses: List[HTTPResponse] = self.pool.starmap(
-            HTTPEntity().post,
-            zipped_url
-        )
-
-        results += self.parse_response(responses)
-        if len(results) == 0:
-            return []
-
-        total_hits = results[0].totalHits
-        if total_hits < 5000:
-            return 
-        elif total_hits < 50000:
-            results +=  self.get_all_data(results, url, queries)
-            return
-
-        new_mid_time = new_start_time + (new_end_time - new_start_time) / 2
-        final_mid_time = new_mid_time.strftime(self.time_format)
-        next_mid_time = (new_mid_time + timedelta(seconds=1)).strftime(self.time_format)
-
-        self.get_data_recursively(results, start_time, final_mid_time, url, queries)
-        self.get_data_recursively(results, next_mid_time, end_time, url, queries)
-        return results
 
     def get_data(self, queries: List[ResourceQuery]) -> List[ResourceResult]:
         """Method to post the request for geo, temporal, property, add filters

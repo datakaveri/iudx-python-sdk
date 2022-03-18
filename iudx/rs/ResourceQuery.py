@@ -35,7 +35,7 @@ class ResourceQuery():
         self._offset: int = None
         self._limit: int = None
         self._count: bool = None
-        self.time_format = "%Y-%m-%dT%H:%M:%SZ"
+        self.time_format = "%Y-%m-%dT%H:%M:%S%z"
         return
 
     def strptime(self, time):

@@ -59,7 +59,7 @@ class Entity():
         self.resources_df = None
         self.start_time = None
         self.end_time = None
-        self.time_format = "%Y-%m-%dT%H:%M:%SZ"
+        self.time_format = "%Y-%m-%dT%H:%M:%S+05:30"
         self.slot_hours = 24
         self.max_query_days = 61
 
