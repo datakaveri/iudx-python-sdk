@@ -27,7 +27,7 @@ class ResourceQuery():
         self._start_time: str = None
         self._end_time: str = None
         self._key: str = None
-        self._value: str_or_float = None
+        self._value: str = None
         self._operation: str = None
         self._text_query: str = None
         self._filters: List[str] = []
@@ -35,6 +35,7 @@ class ResourceQuery():
         self._offset: int = None
         self._limit: int = None
         self._count: bool = None
+        self._is_property_search: bool = False
         self.time_format = "%Y-%m-%dT%H:%M:%S%z"
         return
 
@@ -102,6 +103,14 @@ class ResourceQuery():
         self._key = key
         self._value = value
         self._operation = operation
+        self._is_property_search = True
+
+        if (type(self._value) == type("abc")):
+            pass
+        elif (type(self._value) == type(1.0)):
+            self._value = str(self._value)
+
+
         return self
 
     def add_filters(self, filters: List[str]=None) -> ResourceQuery:
@@ -143,6 +152,15 @@ class ResourceQuery():
 
     def get_offset_limit(self):
         return self._offset, self._limit
+
+
+    def get_query_for_get(self) -> str:
+        if (self._is_property_search):
+            query_str = "?id=" + self._entities[0] + "&q=" \
+                        + self._key + self._operation + self._value
+            return query_str
+        else:
+            raise RuntimeError("Not a property search, can't execute GET")
 
     def get_query(self) -> str:
         """Method to build query for geo, temporal, propery and add filter.

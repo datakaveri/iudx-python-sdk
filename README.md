@@ -186,8 +186,12 @@ iudx
   --secret <clientSecret> 
   --latest
 
-# Example
+# Example Temporal
 iudx --entity suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta --clientid=<clientID> --secret=<clientSecret> --entity-type=resource --role=consumer --start 2021-01-01T14:20:00Z --end 2021-01-09T14:20:00Z --download=sample --type=json
+
+# Example static data (no --start and --end)
+iudx --entity varanasismartcity.gov.in/62d1f729edd3d2a1a090cb1c6c89356296963d55/rs.iudx.org.in/varanasi-point-of-interests/smartpole-locations --clientid=<clientID> --secret=<clientSecret> --entity-type=resource --role=consumer --download=test --type=csv
+
 ```
 NOTE: `--clientid --secret` is required for the all entities (open and secure). To obtain this, register on https://catalogue.iudx.org.in/ <br>
 

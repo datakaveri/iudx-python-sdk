@@ -43,9 +43,6 @@ class Entity():
         Args:
             entity_id (String): Id of the entity to be queried.
         """
-        # Request access token
-        if token is None and token_obj is not None:
-            token = token_obj.request_token()
 
         # public variables
         self.catalogue: Catalogue = Catalogue(
@@ -54,6 +51,7 @@ class Entity():
             token=token
         )
         self.rs: ResourceServer = None
+        self.rs_url = rs_url
         self.resources: List[Dict] = []
         self.entity_id = entity_id
         self.resources_df = None
@@ -82,6 +80,10 @@ class Entity():
         if "iudx:ResourceGroup" in documents_result.documents[0]["type"]:
             self._data_descriptor = documents_result.documents[0]["dataDescriptor"]
 
+            if ("accessPolicy" in documents_result.documents[0].keys() \
+                    and documents_result.documents[0]["accessPolicy"] == "OPEN"):
+                token_obj.set_item(rs_url.split("/")[2], "resource_server", "consumer")
+
             # TODO: Parse the data schema from the data descriptor
             for key in self._data_descriptor.keys():
                 pass
@@ -107,8 +109,20 @@ class Entity():
             # for res in cat_result.documents:
             #     self.resources.append(res["id"])
 
+
         elif "iudx:Resource" in documents_result.documents[0]["type"]:
             self.resources = [{"id": self.entity_id}]
+            rg = self.catalogue.get_related_entity(self.entity_id, rel="resourceGroup")
+            if ("accessPolicy" in documents_result.documents[0].keys() \
+                    and documents_result.documents[0]["accessPolicy"] == "OPEN"):
+                token_obj.set_item(rs_url.split("/")[2], "resource_server", "consumer")
+            if ("accessPolicy" in rg.documents[0].keys() \
+                    and rg.documents[0]["accessPolicy"] == "OPEN"):
+                token_obj.set_item(rs_url.split("/")[2], "resource_server", "consumer")
+
+        # Request access token
+        if token is None and token_obj is not None:
+            token = token_obj.request_token()
 
         self.rs: ResourceServer = ResourceServer(
             rs_url=rs_url,
@@ -116,6 +130,8 @@ class Entity():
             token=token
         )
         return
+
+
 
     """ Deprecated """
     def set_slot_hours(self, hours:int=24) -> Entity:
@@ -297,7 +313,7 @@ class Entity():
 
     def property_search(self, key: str=None, value: str_or_float=None,
                         operation: str=None) -> pd.DataFrame:
-        """Method to fetch resources for temporal based search
+        """Method to fetch resources for static datasources
             and generate a dataframe.
 
         Args:
@@ -309,54 +325,36 @@ class Entity():
         Returns:
             resources_df (pd.DataFrame): Pandas DataFrame with property data.
         """
-        resources_df = pd.DataFrame()
-
+        """ Make batch queries """
         queries = []
+        limit = 5000
+        curr_offset = 0
+        # Max documents currently retrievable
+        max_total_hits = 1e6
+        curr_total_hits = 1e6
+        resources_df = pd.DataFrame()
+        total_results = []
+
         for resource in self.resources:
-            resource_query = ResourceQuery()
-            resource_query.add_entity(resource["id"])
+            while ((curr_offset+1 < curr_total_hits) \
+                    and (curr_offset+1 < max_total_hits)):
+                resource_query = ResourceQuery()
+                resource_query.set_offset_limit(curr_offset, limit)
+                resource_query.add_entity(resource["id"])
+                resource_query.property_search(key="id", value=resource["id"],\
+                                                operation=operation)
+                rs_results = self.rs.get_data_using_get([resource_query])
 
-            # TODO: temporal(during) query is required for property search.
-            query = resource_query.property_search(
-                key=key,
-                value=value,
-                operation=operation
-            )
-            queries.append(query)
-        rs_results: List[ResourceResult] = self.rs.get_data(queries)
-
-        for rs_result in rs_results:
-            try:
-                if rs_result.type == 200:
-                    resource_df = pd.json_normalize(rs_result.results)
-
-                    if len(resources_df) == 0:
-                        resources_df = resource_df
-                    else:
-                        resources_df = pd.concat([resources_df, resource_df])
-                elif rs_result.type == 401:
-                    raise RuntimeError("Not Authorized: Invalid credentials")
-            except Exception as e:
-                print(f"No Resource Data: {e}")
-
-        # Processing data as a time series dataframe:
-        # 1) converting time feature to datetime.
-        # 2) sorting values based on time.
-        # 3) resetting the indices for the dataframe.
-        try:
-            if len(resources_df) != 0:
-                resources_df["observationDateTime"] = pd.to_datetime(
-                    resources_df["observationDateTime"]
-                    )
-                resources_df = resources_df.sort_values(by="observationDateTime")
-            else:
-                print("No Data available during the timeframe.")
-        except Exception as e:
-            print(f"Data format issue: {e}")
+                curr_offset += 5000
+                curr_total_hits = rs_results[0].totalHits
+                if rs_results[0].type == 200:
+                    resource_df = pd.json_normalize(rs_results[0].results)
+                    resources_df = pd.concat([resources_df, resource_df])
 
         resources_df = resources_df.reset_index(drop=True)
         self.resources_df = resources_df
         return resources_df
+
 
     def geo_search(self, geoproperty: str=None, geometry: str=None,
                    georel: str=None, _max_distance: int=None,
@@ -562,6 +560,12 @@ class Entity():
                     limit=limit
                 )
                 entity.download(file_name, file_type)
+            elif start_time is None and \
+                    end_time is None:
+                entity.property_search(key="id", \
+                                        value=entity_id, operation="==")
+                entity.download(file_name, file_type)
+
             else:
                 raise RuntimeError("Some arguments are missing. \nUse: iudx --help")
         else:

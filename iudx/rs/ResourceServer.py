@@ -82,37 +82,35 @@ class ResourceServer():
 
         return rs_results
 
-    """ Deprecated"""
-    def get_all_data(self, rs_results: List[ResourceResult], url: str, queries: List[ResourceQuery]):
-        """Helper method for fetching all the data between the time range.
+    def get_data_using_get(self, queries: List[ResourceQuery]) -> List[ResourceResult]:
+        """ Get data using HTTP Get 
 
-            Loops through all offsets and get the data automatically
+        Args:
+            queries (List[ResourceQuery]): A list of query objects of 
+            ResourceQuery class.
+        Returns:
+            rs_results (List[ResourceResult]): returns a list of 
+                ResourceResult object.
+        """
+        url = self.url + "/entities"
 
-       Args:
-           rs_results (List[ResourceResult]): results returned from the previous request (first 5000 hits)
-           url (str): request url
-           queries (List[ResourceQuery]): A list of query objects of ResourceQuery class.
-       Returns:
-           results for all the data fetched
-       """
 
-        total_hits = rs_results[0].totalHits
-        limit = rs_results[0].limit # default 5000
-        offset_window = int(total_hits / limit)
-
-        for i in range(offset_window):
-            zipped_url = []
-            for query in queries:
-                new_url = url + "?offset=" + str(limit * (i + 1)) + "&limit=" + str(limit)
-                zipped_url.append((new_url, query.get_query(), self.headers))
-
-            responses: List[HTTPResponse] = self.pool.starmap(
-                HTTPEntity().post,
-                zipped_url
-            )
-            rs_results = rs_results + self.parse_response(responses)
-
+        rs_results = []
+        zipped_url = []
+        offset = None
+        limit = None
+        for query in queries:
+            offset, limit = query.get_offset_limit()
+            new_url = url
+            if (query._is_property_search):
+                url +=  query.get_query_for_get()
+            if offset is not None and limit is not None:
+                new_url = url + "&offset=" + str(offset) + "&limit=" + str(limit)
+            response = HTTPEntity().get(url=new_url, headers=self.headers)
+            rs_results += self.parse_response([response])
         return rs_results
+
+
 
 
     def get_data(self, queries: List[ResourceQuery]) -> List[ResourceResult]:
@@ -132,14 +130,9 @@ class ResourceServer():
         zipped_url = []
         offset = None
         limit = None
-        start_time = None
-        end_time = None
         for query in queries:
             offset, limit = query.get_offset_limit()
             new_query = query.get_query()
-            query_obj = json.loads(new_query)
-            start_time = query_obj['temporalQ']['time']
-            end_time = query_obj['temporalQ']['endtime']
             new_url = url
             if offset is not None and limit is not None:
                 new_url = url + "?offset=" + str(offset) + "&limit=" + str(limit)
@@ -150,7 +143,6 @@ class ResourceServer():
             zipped_url
             )
         rs_results = self.parse_response(responses)
-
         return rs_results
 
 
