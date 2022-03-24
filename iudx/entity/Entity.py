@@ -78,7 +78,13 @@ class Entity():
         documents_result = self.catalogue.get_item(self.entity_id)
 
         if "iudx:ResourceGroup" in documents_result.documents[0]["type"]:
-            self._data_descriptor = documents_result.documents[0]["dataDescriptor"]
+            try:
+                self._data_descriptor = documents_result.documents[0]["dataDescriptor"]
+            except Exception as e:
+                # TODO: Populate data descriptors for all resources
+                self._data_descriptor = {}
+                print()
+
 
             if ("accessPolicy" in documents_result.documents[0].keys() \
                     and documents_result.documents[0]["accessPolicy"] == "OPEN"):
