@@ -437,7 +437,7 @@ class Entity():
             file_name (String): Custom file name for downloading.
             file_type (String): The format in which data is downloaded.
         """
-        supported_file_types = ["csv", "json"]
+        supported_file_types = ["csv", "json", "parquet"]
         try:
             file_type = file_type.lower()
         except:
@@ -468,6 +468,10 @@ class Entity():
                     compression=compression_opts
                 )
                 print(f"File downloaded successfully: '{file_name}.zip'")
+            elif file_type == "parquet":
+                self.resources_df.to_parquet(
+                    f"{file_name}.parquet"
+                )
             else:
                 raise RuntimeError(f"File type is not supported. \
                     \nPlease choose a file type: \

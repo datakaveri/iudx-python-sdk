@@ -87,4 +87,4 @@ class Token:
             access_token = self.credentials["accessToken"]
             return access_token
         else:
-            raise RuntimeError(result_data["detail"])
+            raise RuntimeError(result_data)
