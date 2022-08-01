@@ -17,6 +17,7 @@ from datetime import date, datetime, timedelta
 import click
 import copy
 import tqdm
+import json
 
 
 Entity = TypeVar('T')
@@ -55,6 +56,7 @@ class Entity():
         self.resources: List[Dict] = []
         self.entity_id = entity_id
         self.resources_df = None
+        self.resources_json = []
         self.start_time = None
         self.end_time = None
         self.time_format = "%Y-%m-%dT%H:%M:%S+05:30"
@@ -112,6 +114,7 @@ class Entity():
             cat_result = self.catalogue.search_entity(query)
 
             self.resources = cat_result.documents
+
             # for res in cat_result.documents:
             #     self.resources.append(res["id"])
 
@@ -293,6 +296,7 @@ class Entity():
                         resources_df = resource_df
                     else:
                         resources_df = pd.concat([resources_df, resource_df])
+                        self.resources_json = self.resources_json + rs_result.results
                 elif rs_result.type == 401:
                     raise RuntimeError("Not Authorized: Invalid credentials")
             except Exception as e:
@@ -462,12 +466,9 @@ class Entity():
                 )
                 print(f"File downloaded successfully: '{file_name}.zip'")
             elif file_type == "json":
-                self.resources_df.to_json(
-                    f"{file_name}.zip",
-                    orient="records",
-                    compression=compression_opts
-                )
-                print(f"File downloaded successfully: '{file_name}.zip'")
+                with open(file_name+".json", "w") as f:
+                    json.dump(self.resources_json, f)
+                print(f"File downloaded successfully: '{file_name}.json'")
             elif file_type == "parquet":
                 self.resources_df.to_parquet(
                     f"{file_name}.parquet"
