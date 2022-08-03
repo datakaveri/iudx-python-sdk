@@ -152,7 +152,7 @@ class Entity():
         self.slot_hours = hours
         return self
 
-    def set_time_format(self, format_str:str="%Y-%m-%dT%H:%M:%SZ") -> Entity:
+    def set_time_format(self, format_str:str="%Y-%m-%dT%H:%M:%S+05:30") -> Entity:
         """Setter Method to change the query timestamp format.
 
         Args:
@@ -210,9 +210,11 @@ class Entity():
 
     def make_query_batches(self, q: ResourceQuery, batch_queries: List[ResourceQuery]):
         res = []
-        res =  self.rs.get_data([q])
+        q_count = copy.deepcopy(q)
+        q_count.count()
+        res =  self.rs.get_data([q_count])
         for r in res:
-            if (r.totalHits > 5000):
+            if (r.results[0]["totalHits"] > 5000):
                 mid_time = (q._start_time_datetime + (q._end_time_datetime - q._start_time_datetime)/2)
                 mid_time_str = mid_time.strftime(self.time_format)
                 qa = copy.deepcopy(q)
