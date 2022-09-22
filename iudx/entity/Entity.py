@@ -291,7 +291,7 @@ class Entity():
 
         for rs_result in rs_results:
             try:
-                if rs_result.type == 200:
+                if rs_result.type == "urn:dx:rs:success":
                     resource_df = pd.json_normalize(rs_result.results)
 
                     if len(resources_df) == 0:
@@ -300,7 +300,7 @@ class Entity():
                         resources_df = pd.concat([resources_df, resource_df])
                         self.resources_json = self.resources_json + rs_result.results
                 elif rs_result.type == 401:
-                    raise RuntimeError("Not Authorized: Invalid credentials")
+                    raise RuntimeError("urn:dx:rs:invalidAuthorizationToken")
             except Exception as e:
                 print(f"No Resource Data: {e}")
 
