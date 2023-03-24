@@ -359,7 +359,8 @@ class Entity():
 
                 curr_offset += 5000
                 curr_total_hits = rs_results[0].totalHits
-                if rs_results[0].type == 200:
+                if rs_results[0].type == "urn:dx:rs:success":
+                    self.resources_json = self.resources_json + rs_results[0].results
                     resource_df = pd.json_normalize(rs_results[0].results)
                     resources_df = pd.concat([resources_df, resource_df])
 
@@ -404,7 +405,7 @@ class Entity():
 
         for rs_result in rs_results:
             try:
-                if rs_result.type == 200:
+                if rs_result.type == "urn:dx:rs:success":
                     resource_df = pd.json_normalize(rs_result.results)
 
                     if len(resources_df) == 0:
