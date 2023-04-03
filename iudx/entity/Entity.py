@@ -293,12 +293,11 @@ class Entity():
             try:
                 if rs_result.type == "urn:dx:rs:success":
                     resource_df = pd.json_normalize(rs_result.results)
-
+                    self.resources_json = self.resources_json + rs_result.results
                     if len(resources_df) == 0:
                         resources_df = resource_df
                     else:
                         resources_df = pd.concat([resources_df, resource_df])
-                        self.resources_json = self.resources_json + rs_result.results
                 elif rs_result.type == 401:
                     raise RuntimeError("urn:dx:rs:invalidAuthorizationToken")
             except Exception as e:
