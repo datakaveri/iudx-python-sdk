@@ -66,7 +66,7 @@ class Token:
             role (String): Role of the User.
         """
         self.item = {"itemId": item_id, "itemType": item_type, "role": role}
-        return
+        return self
 
     def request_token(self) -> str:
         """

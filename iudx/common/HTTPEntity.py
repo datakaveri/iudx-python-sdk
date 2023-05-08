@@ -41,6 +41,8 @@ class HTTPEntity(Request):
         request = Request('GET',
                           url,
                           headers=headers)
+        if "content-type" not in headers.keys():
+            headers["content-type"] = "application/json"
         prepared_req = request.prepare()
 
         response = s.send(prepared_req)
@@ -79,13 +81,14 @@ class HTTPEntity(Request):
             response (HTTPResponse): HTTP Response after the API Request.
         """
         s = Session()
+        if "content-type" not in headers.keys():
+            headers["content-type"] = "application/json"
         request = Request('POST',
                           url,
                           data=body,
                           headers=headers
                           )
         prepared_req = request.prepare()
-
         response = s.send(prepared_req)
         http_response = HTTPResponse()
         http_response._response = response

@@ -136,7 +136,10 @@ class ResourceServer():
             new_url = url
             if offset is not None and limit is not None:
                 new_url = url + "?offset=" + str(offset) + "&limit=" + str(limit)
-            zipped_url.append((new_url, new_query, self.headers))
+            if (query.get_headers() is not {}):
+                zipped_url.append((new_url, new_query, query.get_headers()))
+            else:
+                zipped_url.append((new_url, new_query, self.headers))
 
         responses: List[HTTPResponse] = self.pool.starmap(
             HTTPEntity().post,
@@ -159,7 +162,10 @@ class ResourceServer():
         zipped_url = []
         for query in queries:
             url = base_url + query.latest_search()
-            zipped_url.append((url, self.headers))
+            if (query.get_headers() is not {}):
+                zipped_url.append((url, query.get_headers()))
+            else:
+                zipped_url.append((url, self.headers))
 
         responses: List[HTTPResponse] = self.pool.starmap(
             HTTPEntity().get,
@@ -169,7 +175,6 @@ class ResourceServer():
         rs_results = []
         for response in responses:
             rs_result = ResourceResult()
-
             if response.get_status_code() == 401:
                 raise RuntimeError("Not Authorized: Invalid Credentials")
 

@@ -51,6 +51,9 @@ class Entity():
             headers=headers,
             token=token
         )
+        
+        self.token_obj = token_obj
+
         self.rs: ResourceServer = None
         self.rs_url = rs_url
         self.resources: List[Dict] = []
@@ -85,7 +88,6 @@ class Entity():
             except Exception as e:
                 # TODO: Populate data descriptors for all resources
                 self._data_descriptor = {}
-                print()
 
 
             if ("accessPolicy" in documents_result.documents[0].keys() \
@@ -133,11 +135,18 @@ class Entity():
         if token is None and token_obj is not None:
             token = token_obj.request_token()
 
-        self.rs: ResourceServer = ResourceServer(
-            rs_url=rs_url,
-            headers=headers,
-            token=token
-        )
+        if "iudx:Resource" in documents_result.documents[0]["type"]:
+            self.rs: ResourceServer = ResourceServer(
+                rs_url=rs_url,
+                headers=headers,
+                token=token
+            )
+        else:
+            self.rs: ResourceServer = ResourceServer(
+                rs_url=rs_url,
+                headers=headers,
+                token_obj=token_obj
+            )
         return
 
 
@@ -173,6 +182,7 @@ class Entity():
         queries = []
         for resource in self.resources:
             resource_query = ResourceQuery()
+            resource_query.set_header("token", self.token_obj.set_item(resource["id"], "resource", "consumer").request_token())
             query = resource_query.add_entity(resource["id"])
             queries.append(query)
 
@@ -180,7 +190,7 @@ class Entity():
 
         for rs_result in rs_results:
             try:
-                if rs_result.type == 200:
+                if rs_result.type == "urn:dx:rs:success":
                     resource_df = pd.json_normalize(rs_result.results)
 
                     if len(resources_df) == 0:
@@ -277,6 +287,8 @@ class Entity():
         for resource in self.resources:
             for i in range(0,len(date_bins)-1):
                 resource_query = ResourceQuery()
+                resource_query.set_header("token",
+                                      self.token_obj.set_item(resource["id"], "resource", "consumer").request_token())
                 resource_query.set_offset_limit(offset, limit)
                 resource_query.add_entity(resource["id"])
                 resource_query.during_search(
@@ -286,8 +298,8 @@ class Entity():
                 self.make_query_batches(resource_query, batch_queries)
                 queries += batch_queries
 
-
         rs_results: List[ResourceResult] = self.rs.get_data(queries)
+
 
         for rs_result in rs_results:
             try:

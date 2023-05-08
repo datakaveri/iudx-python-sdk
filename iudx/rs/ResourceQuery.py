@@ -20,6 +20,7 @@ class ResourceQuery():
         """ResourceQuery base class constructor
         """
         self._geoproperty: str = None
+        self._headers: str = {}
         self._geometry: str = None
         self._georel: str = None
         self._max_distance: int = None
@@ -38,6 +39,12 @@ class ResourceQuery():
         self._is_property_search: bool = False
         self.time_format = "%Y-%m-%dT%H:%M:%S%z"
         return
+
+    def set_header(self, key, value):
+        self._headers[key] = value
+
+    def get_headers(self):
+        return self._headers
 
     def strptime(self, time):
         return datetime.strptime(time, self.time_format)
