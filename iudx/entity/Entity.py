@@ -122,7 +122,13 @@ class Entity():
 
 
         elif "iudx:Resource" in documents_result.documents[0]["type"]:
-            self.resources = [{"id": self.entity_id}]
+            cat_query = CatalogueQuery()
+            param1 = {"key": "id", "value": [self.entity_id]}
+            query = cat_query.property_search(
+                        key=param1["key"],
+                        value=param1["value"])
+            cat_result = self.catalogue.search_entity(query)
+            self.resources = cat_result.documents
             rg = self.catalogue.get_related_entity(self.entity_id, rel="resourceGroup")
             if ("accessPolicy" in documents_result.documents[0].keys() \
                     and documents_result.documents[0]["accessPolicy"] == "OPEN"):
@@ -518,6 +524,9 @@ class Entity():
     @click.option('--latest',
         is_flag=True, default=None, type=str,
         help='Get latest data')
+    @click.option('--meta',
+        is_flag=True, default=None, type=str,
+        help='Get meta information of resource(s)')
     @click.option('--offset', 'offset',
         default=None, type=str,
         help='The offset from the first result to fetch.')
@@ -538,7 +547,7 @@ class Entity():
           help='Role of the user')
     def cli(self, entity_id, token,
             start_time, end_time,
-            file_name, file_type, latest,
+            file_name, file_type, latest, meta,
             client_id, client_secret, entity_type, role,
             offset, limit) -> Entity:
         """Method to implement the command line interface for the
@@ -559,6 +568,7 @@ class Entity():
             offset (String): The offset from the first result to fetch.
             limit (String): The maximum results to be returned.
         """
+
         entity = None
         if entity_id is not None:
             if token is None and client_id is not None and client_secret is not None:
@@ -568,32 +578,41 @@ class Entity():
                 entity = Entity(entity_id=entity_id, token_obj=token_obj)
             else:
                 entity = Entity(entity_id=entity_id, token=token)
+
         else:
             raise RuntimeError("Some arguments are missing. \nUse: iudx --help")
 
-        if latest == False or latest == None:
-            if entity_id is not None and \
-                start_time is not None and \
-                end_time is not None and \
-                file_name is not None and \
-                file_type is not None :
+        if entity_id is not None and \
+            start_time is not None and \
+            end_time is not None and \
+            file_name is not None and \
+            file_type is not None :
 
-                entity.during_search(
-                    start_time=start_time,
-                    end_time=end_time,
-                    offset=offset,
-                    limit=limit
-                )
-                entity.download(file_name, file_type)
-            elif start_time is None and \
-                    end_time is None:
-                entity.property_search(key="id", \
-                                        value=entity_id, operation="==")
-                entity.download(file_name, file_type)
+            entity.during_search(
+                start_time=start_time,
+                end_time=end_time,
+                offset=offset,
+                limit=limit
+            )
+            entity.download(file_name, file_type)
 
-            else:
-                raise RuntimeError("Some arguments are missing. \nUse: iudx --help")
+        elif meta in (False, None) and start_time is None and \
+                end_time is None:
+            entity.property_search(key="id", \
+                                    value=entity_id, operation="==")
+            entity.download(file_name, file_type)
+
+        elif (meta):
+            entity = Entity(entity_id=entity_id)
+            with open(entity_id.split("/")[-1] + ".txt", "w") as f:
+                f.write(json.dumps(entity.resources, indent=4))
+                print("File saved as " +  entity_id.split("/")[-1] + ".txt")
+
+
         else:
+            raise RuntimeError("Some arguments are missing. \nUse: iudx --help")
+
+        if latest == True:
             df = entity.latest()
             try:
                 df.drop(["id"], axis=1, inplace=True)
@@ -606,4 +625,8 @@ class Entity():
 
             print("="*50)
             print(f"Latest Data has {df.shape[0]} rows and {df.shape[1]} columns.")
+
+
         return self
+
+        

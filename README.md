@@ -162,7 +162,18 @@ access_token = token.request_token()
 
 ## CLI
 
-### 1) Download the data based on a during entity query.
+### 1) Download the meta data of a resource group and all resources
+```
+iudx 
+  --entity <entity_id> 
+  --meta
+
+# Example
+
+iudx --entity datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.org.in/pune-env-aqm/f36b4669-628b-ad93-9970-f9d424afbf75 --meta
+```
+
+### 2) Download the data based on a during entity query.
 ```
 # Sample command
 iudx 
@@ -177,7 +188,7 @@ iudx
 iudx --entity datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.org.in/pune-env-aqm/f36b4669-628b-ad93-9970-f9d424afbf75 --start 2021-01-01T14:20:00Z --end 2021-01-07T14:20:00Z --download test_file --type csv
 ```
 
-### 2) Print the latest entity data in the console.
+### 3) Print the latest entity data in the console.
 ```
 # Sample command
 iudx 
