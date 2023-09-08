@@ -12,7 +12,7 @@ class Token:
 
     def __init__(
             self,
-            auth_url: str = "https://authorization.iudx.org.in/auth/v1/token",
+            auth_url: str = "https://authorization.iudx.org.in/auth/v1",
             authorization_token: str = None,
             token_file: str = None,
             client_id: str = None,
@@ -79,7 +79,8 @@ class Token:
             self.set_item("rs.iudx.org.in", "resource_server", "consumer")
 
         http_entity = HTTPEntity()
-        response: HTTPResponse = http_entity.post(self.auth_url, json.dumps(self.item), self.headers)
+        url = self.auth_url + "/token"
+        response: HTTPResponse = http_entity.post(url, json.dumps(self.item), self.headers)
         result_data = response.get_json()
 
         if response.get_status_code() == 200:

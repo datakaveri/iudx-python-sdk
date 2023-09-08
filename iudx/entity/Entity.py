@@ -506,6 +506,16 @@ class Entity():
     @click.option('--entity', 'entity_id',
         default=None, required=True, type=str,
         help='Entity Id to query.')
+
+    @click.option('--auth_url', 'auth_url',
+                  default=None, type=str, help='{domain_name}/{auth}/{v1}')
+
+    @click.option('--cat_url', 'cat_url',
+                  default=None, type=str, help='{domain_name}/{iudx}/{cat}/{v1}')
+
+    @click.option('--rs_url', 'rs_url',
+        default=None, type=str, help='{domain_name}/{ngsi-ld}/{v1}')
+
     @click.option('--token', 'token',
         default=None, type=str,
         help='Consumer Token for Resource.')
@@ -545,7 +555,7 @@ class Entity():
     @click.option('--role', 'role',
           default="consumer", type=str,
           help='Role of the user')
-    def cli(self, entity_id, token,
+    def cli(self, auth_url, cat_url, rs_url, entity_id, token,
             start_time, end_time,
             file_name, file_type, latest, meta,
             client_id, client_secret, entity_type, role,
@@ -573,9 +583,14 @@ class Entity():
         if entity_id is not None:
             if token is None and client_id is not None and client_secret is not None:
                 token_obj = Token(client_id=client_id, client_secret=client_secret)
+                if (auth_url is not None):
+                    token_obj.auth_url = auth_url
                 if entity_type is not None and role is not None:
                     token_obj.set_item(item_id=entity_id, item_type=entity_type, role=role)
-                entity = Entity(entity_id=entity_id, token_obj=token_obj)
+                if (cat_url is None and rs_url is not None):
+                    entity = Entity(entity_id=entity_id, token_obj=token_obj)
+                else:
+                    entity = Entity(cat_url=cat_url, rs_url=rs_url, entity_id=entity_id, token_obj=token_obj)
             else:
                 entity = Entity(entity_id=entity_id, token=token)
 
