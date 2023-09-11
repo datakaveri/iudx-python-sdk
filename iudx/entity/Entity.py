@@ -373,7 +373,6 @@ class Entity():
                 resource_query.property_search(key="id", value=resource["id"],\
                                                 operation=operation)
                 rs_results = self.rs.get_data_using_get([resource_query])
-
                 curr_offset += 5000
                 curr_total_hits = rs_results[0].totalHits
                 if rs_results[0].type == "urn:dx:rs:success":
@@ -587,7 +586,7 @@ class Entity():
                     token_obj.auth_url = auth_url
                 if entity_type is not None and role is not None:
                     token_obj.set_item(item_id=entity_id, item_type=entity_type, role=role)
-                if (cat_url is None and rs_url is not None):
+                if (cat_url is None and rs_url is None):
                     entity = Entity(entity_id=entity_id, token_obj=token_obj)
                 else:
                     entity = Entity(cat_url=cat_url, rs_url=rs_url, entity_id=entity_id, token_obj=token_obj)

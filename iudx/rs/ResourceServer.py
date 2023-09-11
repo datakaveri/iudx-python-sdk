@@ -63,7 +63,6 @@ class ResourceServer():
         rs_results = []
         for response in responses:
             rs_result = ResourceResult()
-
             if response.get_status_code() == 401:
                 raise RuntimeError("Not Authorized: Invalid Credentials")
 

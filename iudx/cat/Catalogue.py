@@ -26,7 +26,10 @@ class Catalogue():
         Returns:
             returned-varaible (returned-varaible-type): return-variable-description
         """
-        self.url: str = cat_url
+        if (cat_url is not None):
+            self.url: str = cat_url
+        else:
+            self.url = "https://api.catalogue.iudx.org.in/iudx/cat/v1"
         self.token: str = token
         self.headers: Dict[str, str] = headers
         return
