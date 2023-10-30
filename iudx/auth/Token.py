@@ -12,7 +12,7 @@ class Token:
 
     def __init__(
             self,
-            auth_url: str = "https://authorization.iudx.org.in/auth/v1",
+            auth_url: str = "https://cos.iudx.org.in/auth/v1",
             authorization_token: str = None,
             token_file: str = None,
             client_id: str = None,
@@ -76,7 +76,7 @@ class Token:
              access_token (String): Token to access the private resources
         """
         if self.item is None:
-            self.set_item("rs.iudx.org.in", "resource_server", "consumer")
+            self.set_item("cos.iudx.org.in", "resource_server", "consumer")
 
         http_entity = HTTPEntity()
         url = self.auth_url + "/token"

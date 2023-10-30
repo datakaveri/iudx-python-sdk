@@ -32,8 +32,8 @@ class Entity():
     def __init__(
         self: Entity,
         entity_id: str=None,
-        cat_url: str="https://api.catalogue.iudx.org.in/iudx/cat/v1",
-        rs_url: str="https://rs.iudx.org.in/ngsi-ld/v1",
+        cat_url: str="https://cos.iudx.org.in/iudx/cat/v1",
+        rs_url: str="https://rs.cos.iudx.org.in/ngsi-ld/v1",
         headers: Dict={"content-type": "application/json"},
         token: str=None,
         token_obj: Token=None
