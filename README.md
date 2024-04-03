@@ -226,6 +226,17 @@ print(f"STATUS: {results[0].type}")            # get the status code for the res
 
 ## CLI
 
+### General params
+
+For all of the cli commands, you can optionally pass Catalogue, Auth and Resource Server endpoints,
+if left empty, it will default to the IUDX cetral services
+```
+iudx  
+  --cat_url=https://cos.iudx.org.in/iudx/cat/v1/
+  --rs_url=https://rs.iudx.org.in/iudx/cat/v1/
+  --auth_url=https://cos.iudx.org.in/auth/v1/
+```
+
 ### 1) Download the meta data of a resource group and all resources
 ```
 iudx 
