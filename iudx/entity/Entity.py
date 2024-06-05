@@ -290,19 +290,18 @@ class Entity():
 
         """ Make batch queries """
         queries = []
-        for resource in self.resources:
-            for i in range(0,len(date_bins)-1):
-                resource_query = ResourceQuery()
-                resource_query.set_header("token",
-                                      self.token_obj.set_item(resource["id"], "resource", "consumer").request_token())
-                resource_query.set_offset_limit(offset, limit)
-                resource_query.add_entity(resource["id"])
-                resource_query.during_search(
-                        start_time=date_bins[i],
-                        end_time=date_bins[i+1])
-                batch_queries = []
-                self.make_query_batches(resource_query, batch_queries)
-                queries += batch_queries
+        for i in range(0,len(date_bins)-1):
+            resource_query = ResourceQuery()
+            resource_query.set_header("token",
+                                  self.token_obj.request_token())
+            resource_query.set_offset_limit(offset, limit)
+            resource_query.add_entity(self.resources[0]["id"])
+            resource_query.during_search(
+                    start_time=date_bins[i],
+                    end_time=date_bins[i+1])
+            batch_queries = []
+            self.make_query_batches(resource_query, batch_queries)
+            queries += batch_queries
 
         rs_results: List[ResourceResult] = self.rs.get_data(queries)
 
