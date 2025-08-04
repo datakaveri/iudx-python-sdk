@@ -76,7 +76,7 @@ class Token:
              access_token (String): Token to access the private resources
         """
         if self.item is None:
-            self.set_item("cos.iudx.org.in", "resource_server", "consumer")
+            self.set_item("rs.cos.iudx.org.in", "resource_server", "consumer")
 
         http_entity = HTTPEntity()
         url = self.auth_url + "/token"

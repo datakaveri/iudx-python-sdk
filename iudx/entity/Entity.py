@@ -478,11 +478,11 @@ class Entity():
         if self.resources_df is not None:
             if file_type == "csv":
                 self.resources_df.to_csv(
-                    f"{file_name}.zip",
+                    f"{file_name}.csv",
                     index=False,
-                    compression=compression_opts
+                    # compression=compression_opts
                 )
-                print(f"File downloaded successfully: '{file_name}.zip'")
+                print(f"File downloaded successfully: '{file_name}")
             elif file_type == "json":
                 with open(file_name+".json", "w") as f:
                     json.dump(self.resources_json, f)
@@ -593,7 +593,8 @@ class Entity():
                 entity = Entity(entity_id=entity_id, token=token)
 
         else:
-            raise RuntimeError("Some arguments are missing. \nUse: iudx --help")
+            raise RuntimeError("Some arguments are missing. \nUse: iudx --help.")
+
 
         if entity_id is not None and \
             start_time is not None and \
@@ -610,7 +611,7 @@ class Entity():
             entity.download(file_name, file_type)
 
         elif meta in (False, None) and start_time is None and \
-                end_time is None:
+                end_time is None and latest is False:
             entity.property_search(key="id", \
                                     value=entity_id, operation="==")
             entity.download(file_name, file_type)
@@ -621,23 +622,21 @@ class Entity():
                 f.write(json.dumps(entity.resources, indent=4))
                 print("File saved as " +  entity_id.split("/")[-1] + ".txt")
 
-
-        else:
-            raise RuntimeError("Some arguments are missing. \nUse: iudx --help")
-
-        if latest == True:
+        elif latest:
             df = entity.latest()
             try:
                 df.drop(["id"], axis=1, inplace=True)
             except:
                 pass
-
             print("Displaying top few rows of latest data:")
             print("="*50)
             print(df.head(10))
 
             print("="*50)
             print(f"Latest Data has {df.shape[0]} rows and {df.shape[1]} columns.")
+
+        else:
+            raise RuntimeError("Some arguments are missing. \nUse: iudx --help")
 
 
         return self
