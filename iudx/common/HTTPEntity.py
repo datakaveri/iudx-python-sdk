@@ -10,21 +10,23 @@ import json
 import warnings
 
 
-HTTPEntity = TypeVar('T')
+HTTPEntity = TypeVar("T")
 
 
 class HTTPEntity(Request):
     """Abstract class for Requests. Helps to create a modular interface
-       for the API Request in Python.
+    for the API Request in Python.
     """
 
-    def __init__(self: HTTPEntity, cert: Dict=None):
+    def __init__(self: HTTPEntity, cert: Dict = None):
         """HTTPEntity base class constructor
 
         Args:
             cert (Dict): certificate for authentication.
         """
-        warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
+        warnings.filterwarnings(
+            action="ignore", message="unclosed", category=ResourceWarning
+        )
         Request.__init__(self)
         return
 
@@ -38,9 +40,7 @@ class HTTPEntity(Request):
             response (HTTPResponse): HTTP Response after the API Request.
         """
         s = Session()
-        request = Request('GET',
-                          url,
-                          headers=headers)
+        request = Request("GET", url, headers=headers)
         if "content-type" not in headers.keys():
             headers["content-type"] = "application/json"
         prepared_req = request.prepare()
@@ -60,9 +60,7 @@ class HTTPEntity(Request):
             response (HTTPResponse): HTTP Response after the API Request.
         """
         s = Session()
-        request = Request('DELETE',
-                          url,
-                          headers=headers)
+        request = Request("DELETE", url, headers=headers)
         prepared_req = request.prepare()
 
         response = s.send(prepared_req)
@@ -83,11 +81,7 @@ class HTTPEntity(Request):
         s = Session()
         if "content-type" not in headers.keys():
             headers["content-type"] = "application/json"
-        request = Request('POST',
-                          url,
-                          data=body,
-                          headers=headers
-                          )
+        request = Request("POST", url, data=body, headers=headers)
         prepared_req = request.prepare()
         response = s.send(prepared_req)
         http_response = HTTPResponse()
@@ -105,10 +99,7 @@ class HTTPEntity(Request):
             response (HTTPResponse): HTTP Response after the API Request.
         """
         s = Session()
-        request = Request('PUT',
-                          url,
-                          data=body,
-                          headers=headers)
+        request = Request("PUT", url, data=body, headers=headers)
         prepared_req = request.prepare()
 
         response = s.send(prepared_req)
