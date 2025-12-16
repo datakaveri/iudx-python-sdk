@@ -550,7 +550,7 @@ class Entity:
         # Make the async search request
         response = requests.get(async_url, params=params, headers=headers)
         
-        if response.status_code != 200:
+        if response.status_code not in [200, 201]:
             raise RuntimeError(f"Async search request failed: {response.status_code} - {response.text}")
         
         result = response.json()
@@ -582,7 +582,7 @@ class Entity:
         # Make the status request
         response = requests.get(status_url, params=params, headers=headers)
         
-        if response.status_code != 200:
+        if response.status_code not in [200, 201]:
             raise RuntimeError(f"Async status request failed: {response.status_code} - {response.text}")
         
         result = response.json()
@@ -664,20 +664,33 @@ class Entity:
         while elapsed_time < max_poll_time:
             status_result = self.async_status(search_id=search_id)
             
-            if "results" in status_result and len(status_result["results"]) > 0:
-                status_info = status_result["results"][0]
-                status = status_info.get("status", "UNKNOWN")
+            # Handle different response formats - check both "results" and "result"
+            results_list = status_result.get("results") or status_result.get("result") or []
+            
+            if len(results_list) > 0:
+                status_info = results_list[0]
+                status = status_info.get("status", "UNKNOWN").upper()
                 progress_pct = status_info.get("progress", 0)
                 
                 if progress and progress_pct != last_progress:
                     last_progress = progress_pct
-                    bar = self._render_progress_bar(progress_pct)
+                    progress_int = int(progress_pct)
+                    bar = self._render_progress_bar(progress_int)
                     elapsed_str = self._format_time(elapsed_time)
-                    status_line = f"\r        {bar} {progress_pct:3d}%  |  Status: {status:<12}  |  Elapsed: {elapsed_str}"
+                    status_line = f"\r        {bar} {progress_int:3d}%  |  Status: {status:<12}  |  Elapsed: {elapsed_str}"
                     print(status_line, end="", flush=True)
                 
-                if status == "COMPLETE":
-                    download_url = status_info.get("file")
+                # Check for completion - handle various status values
+                if status in ["COMPLETE", "COMPLETED", "SUCCEEDED", "SUCCESS", "DONE"]:
+                    # Try different keys for the download URL
+                    download_url = (
+                        status_info.get("file-download-url") or
+                        status_info.get("file") or 
+                        status_info.get("fileUrl") or 
+                        status_info.get("downloadUrl") or
+                        status_info.get("url") or
+                        status_info.get("objectUrl")
+                    )
                     if progress:
                         bar = self._render_progress_bar(100)
                         elapsed_str = self._format_time(elapsed_time)
@@ -686,7 +699,7 @@ class Entity:
                         print("-" * 60)
                         print("  [3/3] Downloading file...")
                     break
-                elif status == "FAILED":
+                elif status in ["FAILED", "ERROR", "FAILURE"]:
                     if progress:
                         print()
                     raise RuntimeError(f"Async download failed: {status_info}")
@@ -697,9 +710,10 @@ class Entity:
         if download_url is None:
             if progress:
                 print()
+                print(f"\n  Debug - Last status response: {status_result}")
             if elapsed_time >= max_poll_time:
                 raise RuntimeError(f"Async download timed out after {max_poll_time} seconds")
-            raise RuntimeError("No download URL received")
+            raise RuntimeError(f"No download URL received. Last status: {status_result}")
         
         # Determine file name
         if file_name is None:
@@ -714,19 +728,11 @@ class Entity:
         # Download the file with progress
         response = requests.get(download_url, headers=headers, stream=True)
         
-        if response.status_code != 200:
+        if response.status_code not in [200, 201]:
             raise RuntimeError(f"Download failed: {response.status_code} - {response.text}")
         
-        # Determine file extension from content-type or URL
-        content_type = response.headers.get("content-type", "")
-        if "json" in content_type or download_url.endswith(".json"):
-            extension = ".json"
-        elif "parquet" in content_type or download_url.endswith(".parquet"):
-            extension = ".parquet"
-        else:
-            extension = ".csv"
-        
-        output_file = f"{file_name}{extension}"
+        # Async downloads always return JSON
+        output_file = f"{file_name}.json"
         
         # Get file size if available
         total_size = int(response.headers.get("content-length", 0))
