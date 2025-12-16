@@ -132,7 +132,69 @@ file_type = "csv"          # can be CSV or JSON
 entity.download(file_name=file_name)
 ```
 
-### 5) Request access token example
+### 5) Async Entity data download example (for large datasets)
+* Use async download for large datasets that would timeout with synchronous requests.
+* Displays continuous progress bar until download is complete.
+
+```python
+from iudx.entity.Entity import Entity
+from iudx.auth.Token import Token
+
+# entity id for the resource
+entity_id = "your-entity-id-here"
+
+# Create token object with credentials
+token_obj = Token(client_id="your-client-id", client_secret="your-client-secret")
+token_obj.set_item(item_id=entity_id, item_type="resource", role="consumer")
+
+# Creating an entity for the sensor
+entity = Entity(entity_id=entity_id, token_obj=token_obj)
+
+# Full async download with integrated progress display
+# Shows continuous progress bar until file is downloaded
+entity.async_download(
+    start_time="2024-01-01T00:00:00+05:30",
+    end_time="2024-01-31T23:59:59+05:30",
+    file_name="large_dataset",
+    poll_interval=5,       # check status every 5 seconds
+    max_poll_time=3600     # wait max 1 hour
+)
+
+# Example output:
+# ============================================================
+#   IUDX Async Download
+# ============================================================
+#   Entity: pune-env-aqm
+#   Period: 2024-01-01T00:00:00+05:30 to 2024-01-31T23:59:59+05:30
+# ------------------------------------------------------------
+#   [1/3] Initiating async search request...
+#         SearchId: abc123-456-789
+# ------------------------------------------------------------
+#   [2/3] Processing data on server...
+#
+#         [████████████████░░░░░░░░░░░░░░]  53%  |  Status: PROCESSING   |  Elapsed: 2m 30s
+# ------------------------------------------------------------
+#   [3/3] Downloading file...
+#         [██████████████████████████████] 100%  |  25.3 / 25.3 MB
+#
+# ============================================================
+#   ✓ Download complete: large_dataset.csv
+#   ✓ File size: 25.30 MB
+# ============================================================
+
+# OR: Just start async search and get searchId (for batch processing)
+search_id = entity.async_search_only(
+    start_time="2024-01-01T00:00:00+05:30",
+    end_time="2024-01-31T23:59:59+05:30",
+    output_file="my_search_ids.json"
+)
+
+# Later, check status of async download
+status = entity.async_status(search_id=search_id)
+print(status)
+```
+
+### 6) Request access token example
 * Get the token for accessing private resources using either Authorization token or clientId/clientSecret.
 
 ```python
@@ -159,8 +221,8 @@ token.set_item(
 # Get access token for the private resource.
 access_token = token.request_token()
 ```
-### 6) Encrypted Resource server get latest example
-* Get the during data for specific entity id.
+### 7) Encrypted Resource server get latest example
+* Get the latest data for specific entity id.
 
 ```python
 from iudx.misc.iudxe2ee import EncryptedResourceServer
@@ -188,7 +250,7 @@ results = ers.get_latest([rs_entity])
 print(f"RESULTS: {results[0].results}")        # get the result data of the resource query.
 print(f"STATUS: {results[0].type}")            # get the status code for the response.
 ```
-### 7) Resource server during example
+### 8) Encrypted Resource server during example
 * Get the during data for specific entity id.
 
 ```python
@@ -280,6 +342,66 @@ iudx --entity varanasismartcity.gov.in/62d1f729edd3d2a1a090cb1c6c89356296963d55/
 
 ```
 NOTE: `--clientid --secret` is required for the all entities (open and secure). To obtain this, register on https://catalogue.iudx.org.in/ <br>
+
+### 4) Async download for large datasets
+Use async download when dealing with large time ranges that would timeout with synchronous downloads.
+
+```
+# Full async download (starts job, polls for completion, downloads file)
+iudx 
+  --entity <entity_id> 
+  --clientid <clientID> 
+  --secret <clientSecret> 
+  --entity-type resource 
+  --role consumer 
+  --start <start_timestamp> 
+  --end <end_timestamp> 
+  --download <file_name>
+  --async
+
+# Example
+iudx --entity datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.org.in/pune-env-aqm/f36b4669-628b-ad93-9970-f9d424afbf75 --clientid=<clientID> --secret=<clientSecret> --entity-type=resource --role=consumer --start 2024-01-01T00:00:00+05:30 --end 2024-01-31T23:59:59+05:30 --download=large_dataset --async
+
+# With custom polling options
+iudx --entity <entity_id> --clientid=<clientID> --secret=<clientSecret> --entity-type=resource --role=consumer --start <start> --end <end> --download=mydata --async --poll-interval=10 --max-poll-time=7200
+```
+
+### 5) Async download - start only (batch processing)
+Start async downloads without waiting. Useful for starting multiple downloads in parallel.
+
+```
+# Start async download and save searchId to file (doesn't wait for completion)
+iudx 
+  --entity <entity_id> 
+  --clientid <clientID> 
+  --secret <clientSecret> 
+  --entity-type resource 
+  --role consumer 
+  --start <start_timestamp> 
+  --end <end_timestamp> 
+  --async
+  --async-only
+
+# Example
+iudx --entity datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.org.in/pune-env-aqm/f36b4669-628b-ad93-9970-f9d424afbf75 --clientid=<clientID> --secret=<clientSecret> --entity-type=resource --role=consumer --start 2024-01-01T00:00:00+05:30 --end 2024-01-31T23:59:59+05:30 --async --async-only
+```
+
+### 6) Check async download status
+Check the status of a previously started async download using its searchId.
+
+```
+# Check status of async download
+iudx 
+  --entity <entity_id> 
+  --clientid <clientID> 
+  --secret <clientSecret> 
+  --entity-type resource 
+  --role consumer 
+  --async-status <searchId>
+
+# Example
+iudx --entity datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.org.in/pune-env-aqm/f36b4669-628b-ad93-9970-f9d424afbf75 --clientid=<clientID> --secret=<clientSecret> --entity-type=resource --role=consumer --async-status=abc123-search-id-456
+```
 
 Use: `iudx --help` to know more about all possible options.
 

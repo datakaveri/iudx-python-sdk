@@ -3,7 +3,10 @@
 Entity.py
 """
 
-from typing import TypeVar, Generic, Any, List, Dict
+from typing import TypeVar, Generic, Any, List, Dict, Optional
+import time
+import requests
+import sys
 
 from iudx.auth.Token import Token
 from iudx.cat.Catalogue import Catalogue
@@ -502,6 +505,310 @@ class Entity:
             raise RuntimeError("Temporal query is required to download data.")
         return self
 
+    def async_search(
+        self,
+        start_time: str = None,
+        end_time: str = None,
+    ) -> Dict:
+        """Initiate an asynchronous search request for large datasets.
+        
+        This method starts an async download job on the server and returns
+        a searchId that can be used to track progress and retrieve results.
+
+        Args:
+            start_time (String): The starting timestamp for the query.
+            end_time (String): The ending timestamp for the query.
+
+        Returns:
+            Dict: Response containing searchId and status information.
+        """
+        self.start_time = start_time
+        self.end_time = end_time
+        
+        start_date = datetime.strptime(self.start_time, self.time_format)
+        end_date = datetime.strptime(self.end_time, self.time_format)
+
+        if end_date <= start_date:
+            raise RuntimeError("'end_time' should be greater than 'start_time'")
+
+        # Get the resource ID
+        resource_id = self.resources[0]["id"]
+        
+        # Build the async search URL
+        async_url = f"{self.rs_url}/async/search"
+        params = {
+            "id": resource_id,
+            "timerel": "during",
+            "time": start_time,
+            "endtime": end_time
+        }
+        
+        # Get token
+        token = self.token_obj.request_token()
+        headers = {"token": token}
+        
+        # Make the async search request
+        response = requests.get(async_url, params=params, headers=headers)
+        
+        if response.status_code != 200:
+            raise RuntimeError(f"Async search request failed: {response.status_code} - {response.text}")
+        
+        result = response.json()
+        return result
+
+    def async_status(
+        self,
+        search_id: str = None,
+    ) -> Dict:
+        """Check the status of an asynchronous search request.
+
+        Args:
+            search_id (String): The searchId returned from async_search.
+
+        Returns:
+            Dict: Status information including progress and download URLs when ready.
+        """
+        if search_id is None:
+            raise RuntimeError("search_id is required")
+        
+        # Build the status URL
+        status_url = f"{self.rs_url}/async/status"
+        params = {"searchId": search_id}
+        
+        # Get token
+        token = self.token_obj.request_token()
+        headers = {"token": token}
+        
+        # Make the status request
+        response = requests.get(status_url, params=params, headers=headers)
+        
+        if response.status_code != 200:
+            raise RuntimeError(f"Async status request failed: {response.status_code} - {response.text}")
+        
+        result = response.json()
+        return result
+
+    def _format_time(self, seconds: int) -> str:
+        """Format seconds into human-readable time string."""
+        if seconds < 60:
+            return f"{seconds}s"
+        elif seconds < 3600:
+            mins, secs = divmod(seconds, 60)
+            return f"{mins}m {secs}s"
+        else:
+            hours, remainder = divmod(seconds, 3600)
+            mins, secs = divmod(remainder, 60)
+            return f"{hours}h {mins}m {secs}s"
+
+    def _render_progress_bar(self, progress_pct: int, width: int = 30) -> str:
+        """Render a text-based progress bar."""
+        filled = int(width * progress_pct / 100)
+        empty = width - filled
+        bar = "█" * filled + "░" * empty
+        return f"[{bar}]"
+
+    def async_download(
+        self,
+        start_time: str = None,
+        end_time: str = None,
+        file_name: str = None,
+        poll_interval: int = 5,
+        max_poll_time: int = 3600,
+        progress: bool = True,
+    ) -> Optional[str]:
+        """Perform an asynchronous download with polling for completion.
+        
+        This method initiates an async search, polls for completion,
+        and downloads the result file when ready. Displays a continuous
+        progress bar until download is complete.
+
+        Args:
+            start_time (String): The starting timestamp for the query.
+            end_time (String): The ending timestamp for the query.
+            file_name (String): Custom file name for downloading (without extension).
+            poll_interval (int): Seconds between status checks (default: 5).
+            max_poll_time (int): Maximum seconds to wait for completion (default: 3600).
+            progress (bool): Show progress updates (default: True).
+
+        Returns:
+            Optional[str]: Path to downloaded file, or None if download failed.
+        """
+        if progress:
+            print("=" * 60)
+            print("  IUDX Async Download")
+            print("=" * 60)
+            print(f"  Entity: {self.entity_id.split('/')[-1]}")
+            print(f"  Period: {start_time} to {end_time}")
+            print("-" * 60)
+            print("  [1/3] Initiating async search request...")
+        
+        # Initiate async search
+        search_result = self.async_search(start_time=start_time, end_time=end_time)
+        
+        if "result" not in search_result or len(search_result["result"]) == 0:
+            raise RuntimeError(f"Async search failed: {search_result}")
+        
+        search_id = search_result["result"][0]["searchId"]
+        
+        if progress:
+            print(f"        SearchId: {search_id}")
+            print("-" * 60)
+            print("  [2/3] Processing data on server...")
+            print()
+        
+        # Poll for completion
+        elapsed_time = 0
+        download_url = None
+        last_progress = -1
+        
+        while elapsed_time < max_poll_time:
+            status_result = self.async_status(search_id=search_id)
+            
+            if "results" in status_result and len(status_result["results"]) > 0:
+                status_info = status_result["results"][0]
+                status = status_info.get("status", "UNKNOWN")
+                progress_pct = status_info.get("progress", 0)
+                
+                if progress and progress_pct != last_progress:
+                    last_progress = progress_pct
+                    bar = self._render_progress_bar(progress_pct)
+                    elapsed_str = self._format_time(elapsed_time)
+                    status_line = f"\r        {bar} {progress_pct:3d}%  |  Status: {status:<12}  |  Elapsed: {elapsed_str}"
+                    print(status_line, end="", flush=True)
+                
+                if status == "COMPLETE":
+                    download_url = status_info.get("file")
+                    if progress:
+                        bar = self._render_progress_bar(100)
+                        elapsed_str = self._format_time(elapsed_time)
+                        print(f"\r        {bar} 100%  |  Status: COMPLETE      |  Elapsed: {elapsed_str}")
+                        print()
+                        print("-" * 60)
+                        print("  [3/3] Downloading file...")
+                    break
+                elif status == "FAILED":
+                    if progress:
+                        print()
+                    raise RuntimeError(f"Async download failed: {status_info}")
+            
+            time.sleep(poll_interval)
+            elapsed_time += poll_interval
+        
+        if download_url is None:
+            if progress:
+                print()
+            if elapsed_time >= max_poll_time:
+                raise RuntimeError(f"Async download timed out after {max_poll_time} seconds")
+            raise RuntimeError("No download URL received")
+        
+        # Determine file name
+        if file_name is None:
+            file_name = f"{self.entity_id.split('/')[-1]}_{self.start_time}_{self.end_time}_async"
+        else:
+            file_name = file_name.split(".")[0]
+        
+        # Get token for download
+        token = self.token_obj.request_token()
+        headers = {"token": token}
+        
+        # Download the file with progress
+        response = requests.get(download_url, headers=headers, stream=True)
+        
+        if response.status_code != 200:
+            raise RuntimeError(f"Download failed: {response.status_code} - {response.text}")
+        
+        # Determine file extension from content-type or URL
+        content_type = response.headers.get("content-type", "")
+        if "json" in content_type or download_url.endswith(".json"):
+            extension = ".json"
+        elif "parquet" in content_type or download_url.endswith(".parquet"):
+            extension = ".parquet"
+        else:
+            extension = ".csv"
+        
+        output_file = f"{file_name}{extension}"
+        
+        # Get file size if available
+        total_size = int(response.headers.get("content-length", 0))
+        downloaded = 0
+        
+        # Write to file with download progress
+        with open(output_file, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+                downloaded += len(chunk)
+                
+                if progress and total_size > 0:
+                    pct = int(100 * downloaded / total_size)
+                    bar = self._render_progress_bar(pct)
+                    size_mb = downloaded / (1024 * 1024)
+                    total_mb = total_size / (1024 * 1024)
+                    print(f"\r        {bar} {pct:3d}%  |  {size_mb:.1f} / {total_mb:.1f} MB", end="", flush=True)
+        
+        if progress:
+            if total_size > 0:
+                print()
+            print()
+            print("=" * 60)
+            print(f"  ✓ Download complete: {output_file}")
+            if total_size > 0:
+                print(f"  ✓ File size: {total_size / (1024 * 1024):.2f} MB")
+            print("=" * 60)
+        
+        return output_file
+
+    def async_search_only(
+        self,
+        start_time: str = None,
+        end_time: str = None,
+        output_file: str = None,
+    ) -> str:
+        """Initiate an async search and save the searchId to a file.
+        
+        Useful for batch processing where you want to start multiple 
+        downloads and check their status later.
+
+        Args:
+            start_time (String): The starting timestamp for the query.
+            end_time (String): The ending timestamp for the query.
+            output_file (String): File to save the searchId (default: async_search_ids.json).
+
+        Returns:
+            str: The searchId for this request.
+        """
+        search_result = self.async_search(start_time=start_time, end_time=end_time)
+        
+        if "result" not in search_result or len(search_result["result"]) == 0:
+            raise RuntimeError(f"Async search failed: {search_result}")
+        
+        search_id = search_result["result"][0]["searchId"]
+        
+        if output_file is None:
+            output_file = "async_search_ids.json"
+        
+        # Append to existing file or create new
+        try:
+            with open(output_file, "r") as f:
+                existing = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            existing = []
+        
+        existing.append({
+            "searchId": search_id,
+            "entity_id": self.entity_id,
+            "start_time": start_time,
+            "end_time": end_time,
+            "created_at": datetime.now().isoformat()
+        })
+        
+        with open(output_file, "w") as f:
+            json.dump(existing, f, indent=2)
+        
+        print(f"Async search initiated. SearchId: {search_id}")
+        print(f"SearchId saved to: {output_file}")
+        
+        return search_id
+
     @click.command()
     @click.pass_context
     @click.option(
@@ -600,6 +907,41 @@ class Entity:
     @click.option(
         "--role", "role", default="consumer", type=str, help="Role of the user"
     )
+    @click.option(
+        "--async",
+        "async_mode",
+        is_flag=True,
+        default=False,
+        help="Use async download for large datasets.",
+    )
+    @click.option(
+        "--async-status",
+        "async_status_id",
+        default=None,
+        type=str,
+        help="Check status of async download with given searchId.",
+    )
+    @click.option(
+        "--async-only",
+        "async_only",
+        is_flag=True,
+        default=False,
+        help="Start async download without waiting (saves searchId to file).",
+    )
+    @click.option(
+        "--poll-interval",
+        "poll_interval",
+        default=5,
+        type=int,
+        help="Seconds between status checks for async download (default: 5).",
+    )
+    @click.option(
+        "--max-poll-time",
+        "max_poll_time",
+        default=3600,
+        type=int,
+        help="Maximum seconds to wait for async download (default: 3600).",
+    )
     def cli(
         self,
         auth_url,
@@ -619,6 +961,11 @@ class Entity:
         role,
         offset,
         limit,
+        async_mode,
+        async_status_id,
+        async_only,
+        poll_interval,
+        max_poll_time,
     ) -> Entity:
         """Method to implement the command line interface for the
         sdk for getting termporal query and download files.
@@ -637,9 +984,12 @@ class Entity:
             role (String):  Role of the User.
             offset (String): The offset from the first result to fetch.
             limit (String): The maximum results to be returned.
+            async_mode (Boolean): Flag to use async download.
+            async_status_id (String): SearchId to check async status.
+            async_only (Boolean): Flag to start async without waiting.
+            poll_interval (int): Seconds between async status checks.
+            max_poll_time (int): Maximum seconds to wait for async download.
         """
-
-        print(meta, start_time, end_time, latest)
         entity = None
         if entity_id is not None:
             if token is None and client_id is not None and client_secret is not None:
@@ -664,6 +1014,32 @@ class Entity:
 
         else:
             raise RuntimeError("Some arguments are missing. \nUse: iudx --help.")
+
+        # Handle async status check (can be done without start/end times)
+        if async_status_id is not None:
+            status = entity.async_status(search_id=async_status_id)
+            print(json.dumps(status, indent=2))
+            return self
+
+        # Handle async download modes
+        if async_mode and start_time is not None and end_time is not None:
+            if async_only:
+                # Just start the async download and save searchId
+                entity.async_search_only(
+                    start_time=start_time,
+                    end_time=end_time,
+                    output_file=file_name + "_searchids.json" if file_name else None,
+                )
+            else:
+                # Full async download with polling
+                entity.async_download(
+                    start_time=start_time,
+                    end_time=end_time,
+                    file_name=file_name,
+                    poll_interval=poll_interval,
+                    max_poll_time=max_poll_time,
+                )
+            return self
 
         if (
             entity_id is not None
